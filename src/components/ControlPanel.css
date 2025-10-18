@@ -1,0 +1,67 @@
+.control-panel {
+    @apply bg-card/5 border backdrop-blur-sm shadow-lg;
+}
+
+.panel-controls {
+    @apply mb-5;
+}
+
+.playback-controls {
+    @apply flex justify-center gap-2 mb-4;
+}
+
+.play-pause {
+    @apply w-12 h-12;
+}
+
+.speed-controls {
+    @apply flex flex-col items-center mb-4;
+}
+
+.speed-controls label {
+    @apply mb-2 font-bold;
+}
+
+.speed-buttons {
+    @apply flex gap-2;
+}
+
+.step-info {
+    @apply text-center mb-5;
+}
+
+.step-indicator {
+    @apply inline-block px-4 py-1 rounded-full font-bold mb-2 shadow-md;
+}
+
+.step-info h4 {
+    @apply text-xl mb-2;
+}
+
+.step-info p {
+    @apply text-muted-foreground leading-relaxed;
+}
+
+.advanced-info {
+    @apply bg-card/20 rounded-lg p-4 max-h-[300px] overflow-y-auto border;
+}
+
+.advanced-info h5 {
+    @apply mb-2 text-highlight;
+}
+
+.advanced-info ul {
+    @apply pl-5 mb-4;
+}
+
+.advanced-info li {
+    @apply mb-2 leading-snug;
+}
+
+.code-example {
+    @apply bg-card/30 rounded-md p-3 overflow-x-auto border;
+}
+
+.code-example pre {
+    @apply font-mono text-sm leading-snug m-0 text-foreground;
+}

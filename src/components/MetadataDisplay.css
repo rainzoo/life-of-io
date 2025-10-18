@@ -1,0 +1,78 @@
+.metadata-display {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    padding: 20px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.metadata-display .panel-header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.metadata-display .panel-header h3 {
+    font-size: 1.4rem;
+    margin-bottom: 5px;
+}
+
+.metadata-display .panel-header p {
+    color: var(--text-medium);
+    font-size: 0.9rem;
+}
+
+.metadata-content {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.metadata-table {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.metadata-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 12px;
+    border-radius: 6px;
+    background: rgba(0, 0, 0, 0.1);
+}
+
+.metadata-label {
+    font-weight: bold;
+    color: var(--text-medium);
+}
+
+.metadata-value {
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+}
+
+.legend {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 10px;
+    padding-top: 15px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.legend-color {
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+}
+
+.legend-text {
+    font-size: 0.9rem;
+    color: var(--text-medium);
+}
