@@ -1,5 +1,5 @@
 .metadata-display {
-    background: rgba(255, 255, 255, 0.05);
+    @apply bg-card/20;
     border-radius: 10px;
     padding: 20px;
     backdrop-filter: blur(10px);

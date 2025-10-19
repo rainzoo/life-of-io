@@ -7,7 +7,7 @@
 }
 
 .app-header h1 {
-    @apply text-4xl mb-2 bg-gradient-to-r from-shell to-storage bg-clip-text text-transparent;
+    @apply text-4xl mb-2 bg-gradient-to-r from-blue-400 to-teal-300 bg-clip-text text-transparent;
 }
 
 .app-header p {
@@ -15,7 +15,7 @@
 }
 
 .app-content {
-    @apply grid grid-cols-[2fr_1fr] gap-5 mb-8;
+    @apply grid grid-cols-[66%_34%] gap-5 mb-8;
 }
 
 .visualization-section {

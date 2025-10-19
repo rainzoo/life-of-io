@@ -62,10 +62,10 @@
 
 .terminal-window {
     width: 250px;
-    background: #2c3e50;
+    background: #1a202c; /* Darker, more modern terminal bg */
     border-radius: 8px;
     overflow: hidden;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
 }
 
 .terminal-header {
@@ -101,7 +101,7 @@
 }
 
 .terminal-title {
-    color: #ecf0f1;
+    color: #a0aec0; /* Softer text color */
     font-size: 0.9rem;
 }
 
@@ -167,18 +167,18 @@
 }
 
 .fs-element.inode {
-    background: rgba(46, 204, 113, 0.2);
-    border: 2px solid #2ecc71;
+    background: rgba(56, 178, 172, 0.2);
+    border: 2px solid #38b2ac; /* Teal */
 }
 
 .fs-element.directory {
-    background: rgba(155, 89, 182, 0.2);
-    border: 2px solid #9b59b6;
+    background: rgba(128, 90, 213, 0.2);
+    border: 2px solid #805ad5; /* Indigo */
 }
 
 .fs-element.data {
-    background: rgba(241, 196, 15, 0.2);
-    border: 2px solid #f1c40f;
+    background: rgba(237, 137, 54, 0.2);
+    border: 2px solid #ed8936; /* Orange */
 }
 
 .block-icon {
@@ -191,10 +191,10 @@
 }
 
 .disk-sector {
-    background: rgba(231, 76, 60, 0.2);
+    background: rgba(229, 62, 62, 0.2);
     padding: 8px 15px;
     border-radius: 6px;
-    border: 2px solid #e74c3c;
+    border: 2px solid #e53e3e; /* Red */
     font-weight: bold;
 }
 
