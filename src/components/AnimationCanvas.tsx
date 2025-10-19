@@ -216,10 +216,20 @@ const AnimationCanvas: React.FC<AnimationCanvasProps> = ({
                         transition={{ delay: index * 0.2 }}
                         style={{
                             backgroundColor: step.color,
-                            top: `${10 + (index * 12)}%`
+                            position: 'absolute',
+                            top: `${10 + (index * 10)}%`,
+                            left: 0,
+                            right: 0,
+                            zIndex: 10 + index,
+                            opacity: 0.95
                         }}
                     >
-                        <div className="packet-label">{step.title}</div>
+                        <div
+                            className="packet-label"
+                            style={{ color: step.color }}
+                        >
+                            {step.title}
+                        </div>
                     </motion.div>
                 ))}
             </div>
