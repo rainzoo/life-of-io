@@ -2,7 +2,7 @@
 import React, { useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { animationSteps } from '../data/animationSteps';
-import { Wrench, FolderOpen, HardDrive, RefreshCw } from 'lucide-react';
+import { FolderOpen, HardDrive, RefreshCw } from 'lucide-react';
 import './AnimationCanvas.css';
 
 interface AnimationCanvasProps {
@@ -43,7 +43,6 @@ const AnimationCanvas: React.FC<AnimationCanvasProps> = ({
                         className={`layer ${layer.id}`}
                         style={{
                             backgroundColor: layer.color,
-                            top: `${layer.position}%`,
                             opacity: currentStep >= _index ? 1 : 0.3,
                             filter: currentStep === _index ? 'brightness(1.2)' : 'brightness(1)'
                         }}
@@ -89,10 +88,6 @@ const AnimationCanvas: React.FC<AnimationCanvasProps> = ({
                                             exit={{ opacity: 0 }}
                                             className="process-animation"
                                         >
-                                            <div className="process-icon">
-                                                <Wrench className="h-6 w-6" />
-                                            </div>
-                                            <div className="process-label">Parsing command...</div>
                                         </motion.div>
                                     )}
                                 </AnimatePresence>
@@ -216,8 +211,8 @@ const AnimationCanvas: React.FC<AnimationCanvasProps> = ({
                         transition={{ delay: index * 0.2 }}
                         style={{
                             backgroundColor: step.color,
-                            position: 'absolute',
-                            top: `${10 + (index * 10)}%`,
+                            position: 'relative',
+                            top: 0,
                             left: 0,
                             right: 0,
                             zIndex: 10 + index,

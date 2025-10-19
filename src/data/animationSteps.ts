@@ -169,7 +169,7 @@ Data Blocks: Empty (0 bytes)`
   },
   {
     id: 7,
-    title: "Completion",
+    title: "Complete",
     description: "File creation process completes successfully",
     color: "#2ecc71",
     duration: 3000,
