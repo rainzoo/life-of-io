@@ -1,41 +1,41 @@
 .app {
-  @apply max-w-6xl mx-auto p-5;
+    @apply max-w-6xl mx-auto p-5;
 }
 
 .app-header {
-  @apply text-center mb-8 p-5 bg-card/5 rounded-lg backdrop-blur-sm border;
+    @apply text-center mb-8 p-5 bg-card/5 rounded-lg backdrop-blur-sm border;
 }
 
 .app-header h1 {
-  @apply text-4xl mb-2 bg-gradient-to-r from-shell to-storage bg-clip-text text-transparent;
+    @apply text-4xl mb-2 bg-gradient-to-r from-shell to-storage bg-clip-text text-transparent;
 }
 
 .app-header p {
-  @apply text-xl text-muted-foreground;
+    @apply text-xl text-muted-foreground;
 }
 
 .app-content {
-  @apply grid grid-cols-[2fr_1fr] gap-5 mb-8;
+    @apply grid grid-cols-[2fr_1fr] gap-5 mb-8;
 }
 
 .visualization-section {
-  @apply bg-card/20 rounded-lg p-5 min-h-[500px] flex items-center justify-center border;
+    @apply bg-card/20 rounded-lg p-5 min-h-[500px] flex items-center justify-center border;
 }
 
 .control-section {
-  @apply flex flex-col gap-5;
+    @apply flex flex-col gap-5;
 }
 
 .app-footer {
-  @apply text-center p-5 text-muted-foreground text-sm border-t border-border;
+    @apply text-center p-5 text-muted-foreground text-sm border-t border-border;
 }
 
 @media (max-width: 768px) {
-  .app-content {
-    @apply grid-cols-1;
-  }
+    .app-content {
+        @apply grid-cols-1;
+    }
 
-  .app-header h1 {
-    @apply text-3xl;
-  }
+    .app-header h1 {
+        @apply text-3xl;
+    }
 }

@@ -1,9 +1,8 @@
-
 import React from 'react';
-import { animationSteps } from '../data/animationSteps';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { SkipBack, Play, Pause, SkipForward, RotateCcw } from 'lucide-react';
+import {animationSteps} from '../data/animationSteps';
+import {Button} from '@/components/ui/button';
+import {Card, CardContent, CardHeader, CardTitle} from '@/components/ui/card';
+import {Pause, Play, RotateCcw, SkipBack, SkipForward} from 'lucide-react';
 import './ControlPanel.css';
 
 interface ControlPanelProps {
@@ -20,17 +19,17 @@ interface ControlPanelProps {
 }
 
 const ControlPanel: React.FC<ControlPanelProps> = ({
-    currentStep,
-    isPlaying,
-    animationSpeed,
-    showAdvanced,
-    onPlayPause,
-    onStepForward,
-    onStepBackward,
-    onRestart,
-    onSpeedChange,
-    onToggleAdvanced
-}) => {
+                                                       currentStep,
+                                                       isPlaying,
+                                                       animationSpeed,
+                                                       showAdvanced,
+                                                       onPlayPause,
+                                                       onStepForward,
+                                                       onStepBackward,
+                                                       onRestart,
+                                                       onSpeedChange,
+                                                       onToggleAdvanced
+                                                   }) => {
     const currentStepData = animationSteps[currentStep];
 
     return (
@@ -48,7 +47,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
                             disabled={currentStep === 0}
                             title="Previous Step"
                         >
-                            <SkipBack className="h-4 w-4" />
+                            <SkipBack className="h-4 w-4"/>
                         </Button>
                         <Button
                             variant="default"
@@ -57,7 +56,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
                             onClick={onPlayPause}
                             title={isPlaying ? "Pause" : "Play"}
                         >
-                            {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+                            {isPlaying ? <Pause className="h-4 w-4"/> : <Play className="h-4 w-4"/>}
                         </Button>
                         <Button
                             variant="outline"
@@ -66,7 +65,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
                             disabled={currentStep === animationSteps.length - 1}
                             title="Next Step"
                         >
-                            <SkipForward className="h-4 w-4" />
+                            <SkipForward className="h-4 w-4"/>
                         </Button>
                         <Button
                             variant="outline"
@@ -74,7 +73,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
                             onClick={onRestart}
                             title="Restart Animation"
                         >
-                            <RotateCcw className="h-4 w-4" />
+                            <RotateCcw className="h-4 w-4"/>
                         </Button>
                     </div>
 
@@ -117,7 +116,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
                 <div className="step-info">
                     <div
                         className="step-indicator"
-                        style={{ backgroundColor: currentStepData.color }}
+                        style={{backgroundColor: currentStepData.color}}
                     >
                         Step {currentStep + 1} of {animationSteps.length}
                     </div>

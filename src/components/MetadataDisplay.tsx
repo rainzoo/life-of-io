@@ -1,15 +1,14 @@
-
 import React from 'react';
-import { FileMetadata } from '../types/animation';
-import { initialMetadata, finalMetadata } from '../data/fileMetadata';
-import { animationSteps } from '../data/animationSteps';
+import {FileMetadata} from '../types/animation';
+import {finalMetadata, initialMetadata} from '../data/fileMetadata';
+import {animationSteps} from '../data/animationSteps';
 import './MetadataDisplay.css';
 
 interface MetadataDisplayProps {
     currentStep: number;
 }
 
-const MetadataDisplay: React.FC<MetadataDisplayProps> = ({ currentStep }) => {
+const MetadataDisplay: React.FC<MetadataDisplayProps> = ({currentStep}) => {
     const calculateCurrentMetadata = (): FileMetadata => {
         if (currentStep === 0) {
             return initialMetadata;
@@ -20,7 +19,7 @@ const MetadataDisplay: React.FC<MetadataDisplayProps> = ({ currentStep }) => {
         }
 
         // Calculate intermediate metadata based on steps
-        const metadata: FileMetadata = { ...initialMetadata };
+        const metadata: FileMetadata = {...initialMetadata};
 
         for (let i = 0; i <= currentStep; i++) {
             const step = animationSteps[i];
@@ -38,13 +37,13 @@ const MetadataDisplay: React.FC<MetadataDisplayProps> = ({ currentStep }) => {
     const currentStepData = animationSteps[currentStep];
 
     const metadataFields = [
-        { key: 'inodeNumber', label: 'Inode Number' },
-        { key: 'permissions', label: 'Permissions' },
-        { key: 'owner', label: 'Owner' },
-        { key: 'size', label: 'Size (bytes)' },
-        { key: 'accessTime', label: 'Access Time' },
-        { key: 'modifyTime', label: 'Modify Time' },
-        { key: 'changeTime', label: 'Change Time' }
+        {key: 'inodeNumber', label: 'Inode Number'},
+        {key: 'permissions', label: 'Permissions'},
+        {key: 'owner', label: 'Owner'},
+        {key: 'size', label: 'Size (bytes)'},
+        {key: 'accessTime', label: 'Access Time'},
+        {key: 'modifyTime', label: 'Modify Time'},
+        {key: 'changeTime', label: 'Change Time'}
     ];
 
     return (
@@ -75,7 +74,7 @@ const MetadataDisplay: React.FC<MetadataDisplayProps> = ({ currentStep }) => {
 
                 <div className="legend">
                     <div className="legend-item">
-                        <div className="legend-color" style={{ backgroundColor: '#4cc9f0' }}></div>
+                        <div className="legend-color" style={{backgroundColor: '#4cc9f0'}}></div>
                         <div className="legend-text">Changed in current step</div>
                     </div>
                 </div>

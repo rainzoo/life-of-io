@@ -1,6 +1,6 @@
 "use client"
 
-import { ThemeProvider as NextThemesProvider } from "next-themes"
+import {ThemeProvider as NextThemesProvider} from "next-themes"
 
 interface ThemeProviderProps {
     children: React.ReactNode
@@ -10,6 +10,6 @@ interface ThemeProviderProps {
     disableTransitionOnChange?: boolean
 }
 
-export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
+export function ThemeProvider({children, ...props}: ThemeProviderProps) {
     return <NextThemesProvider {...props}>{children}</NextThemesProvider>
 }

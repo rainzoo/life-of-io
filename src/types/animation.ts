@@ -1,4 +1,3 @@
-
 export interface AnimationStep {
     id: number;
     title: string;

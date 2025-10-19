@@ -1,8 +1,7 @@
-
-import React, { useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { animationSteps } from '../data/animationSteps';
-import { FolderOpen, HardDrive, RefreshCw } from 'lucide-react';
+import React, {useEffect, useRef} from 'react';
+import {AnimatePresence, motion} from 'framer-motion';
+import {animationSteps} from '../data/animationSteps';
+import {FolderOpen, HardDrive, TableCellsSplit} from 'lucide-react';
 import './AnimationCanvas.css';
 
 interface AnimationCanvasProps {
@@ -13,11 +12,11 @@ interface AnimationCanvasProps {
 }
 
 const AnimationCanvas: React.FC<AnimationCanvasProps> = ({
-    currentStep,
-    isPlaying: _isPlaying,
-    animationSpeed: _animationSpeed,
-    showAdvanced: _showAdvanced
-}) => {
+                                                             currentStep,
+                                                             isPlaying: _isPlaying,
+                                                             animationSpeed: _animationSpeed,
+                                                             showAdvanced: _showAdvanced
+                                                         }) => {
     const canvasRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -27,12 +26,12 @@ const AnimationCanvas: React.FC<AnimationCanvasProps> = ({
 
     const renderSystemLayers = () => {
         const layers = [
-            { id: 'shell', name: 'Shell', color: '#3498db', position: 10 },
-            { id: 'syscall', name: 'System Calls', color: '#e67e22', position: 25 },
-            { id: 'vfs', name: 'VFS Layer', color: '#2ecc71', position: 40 },
-            { id: 'fs', name: 'File System', color: '#9b59b6', position: 55 },
-            { id: 'block', name: 'Block Layer', color: '#f1c40f', position: 70 },
-            { id: 'storage', name: 'Physical Storage', color: '#e74c3c', position: 85 }
+            {id: 'shell', name: 'Shell', color: '#3498db', position: 10},
+            {id: 'syscall', name: 'System Calls', color: '#e67e22', position: 25},
+            {id: 'vfs', name: 'VFS Layer', color: '#2ecc71', position: 40},
+            {id: 'fs', name: 'File System', color: '#9b59b6', position: 55},
+            {id: 'block', name: 'Block Layer', color: '#f1c40f', position: 70},
+            {id: 'storage', name: 'Physical Storage', color: '#e74c3c', position: 85}
         ];
 
         return (
@@ -52,7 +51,7 @@ const AnimationCanvas: React.FC<AnimationCanvasProps> = ({
                                 ? `0 0 20px ${layer.color}`
                                 : '0 0 5px rgba(0,0,0,0.3)'
                         }}
-                        transition={{ duration: 0.3 }}
+                        transition={{duration: 0.3}}
                     >
                         <div className="layer-name">{layer.name}</div>
                         <div className="layer-content">
@@ -83,9 +82,9 @@ const AnimationCanvas: React.FC<AnimationCanvasProps> = ({
                                 <AnimatePresence>
                                     {currentStep >= 0 && (
                                         <motion.div
-                                            initial={{ opacity: 0 }}
-                                            animate={{ opacity: 1 }}
-                                            exit={{ opacity: 0 }}
+                                            initial={{opacity: 0}}
+                                            animate={{opacity: 1}}
+                                            exit={{opacity: 0}}
                                             className="process-animation"
                                         >
                                         </motion.div>
@@ -101,9 +100,9 @@ const AnimationCanvas: React.FC<AnimationCanvasProps> = ({
                         <AnimatePresence>
                             {currentStep >= 1 && (
                                 <motion.div
-                                    initial={{ x: -100, opacity: 0 }}
-                                    animate={{ x: 0, opacity: 1 }}
-                                    exit={{ x: 100, opacity: 0 }}
+                                    initial={{x: -100, opacity: 0}}
+                                    animate={{x: 0, opacity: 1}}
+                                    exit={{x: 100, opacity: 0}}
                                     className="syscall-call"
                                 >
                                     open("newfile.txt", O_CREAT | O_WRONLY | O_TRUNC, 0666)
@@ -118,12 +117,12 @@ const AnimationCanvas: React.FC<AnimationCanvasProps> = ({
                         <AnimatePresence>
                             {currentStep >= 2 && (
                                 <motion.div
-                                    initial={{ scale: 0 }}
-                                    animate={{ scale: 1 }}
-                                    exit={{ scale: 0 }}
+                                    initial={{scale: 0}}
+                                    animate={{scale: 1}}
+                                    exit={{scale: 0}}
                                     className="vfs-icon"
                                 >
-                                    <FolderOpen className="h-8 w-8" />
+                                    <FolderOpen className="h-8 w-8"/>
                                 </motion.div>
                             )}
                         </AnimatePresence>
@@ -135,9 +134,9 @@ const AnimationCanvas: React.FC<AnimationCanvasProps> = ({
                         <AnimatePresence>
                             {currentStep >= 3 && (
                                 <motion.div
-                                    initial={{ y: 50, opacity: 0 }}
-                                    animate={{ y: 0, opacity: 1 }}
-                                    exit={{ y: -50, opacity: 0 }}
+                                    initial={{y: 50, opacity: 0}}
+                                    animate={{y: 0, opacity: 1}}
+                                    exit={{y: -50, opacity: 0}}
                                     className="fs-structure"
                                 >
                                     <div className="fs-element inode">Inode #12345</div>
@@ -154,12 +153,11 @@ const AnimationCanvas: React.FC<AnimationCanvasProps> = ({
                         <AnimatePresence>
                             {currentStep >= 4 && (
                                 <motion.div
-                                    initial={{ rotate: 0 }}
-                                    animate={{ rotate: 360 }}
-                                    transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                                    className="block-icon"
+                                    initial={{opacity: 0}}
+                                    animate={{opacity: 1}}
+                                    className="storage-icon"
                                 >
-                                    <RefreshCw className="h-8 w-8" />
+                                    <TableCellsSplit className="h-8 w-8"/>
                                 </motion.div>
                             )}
                         </AnimatePresence>
@@ -171,19 +169,19 @@ const AnimationCanvas: React.FC<AnimationCanvasProps> = ({
                         <AnimatePresence>
                             {currentStep >= 5 && (
                                 <motion.div
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
+                                    initial={{opacity: 0}}
+                                    animate={{opacity: 1}}
                                     className="storage-icon"
                                 >
-                                    <HardDrive className="h-8 w-8" />
+                                    <HardDrive className="h-8 w-8"/>
                                 </motion.div>
                             )}
                         </AnimatePresence>
                         <AnimatePresence>
                             {currentStep >= 6 && (
                                 <motion.div
-                                    initial={{ scale: 0 }}
-                                    animate={{ scale: [0, 1.2, 1] }}
+                                    initial={{scale: 0}}
+                                    animate={{scale: [0, 1.2, 1]}}
                                     className="disk-sector"
                                 >
                                     Sector Written
@@ -206,9 +204,9 @@ const AnimationCanvas: React.FC<AnimationCanvasProps> = ({
                     <motion.div
                         key={index}
                         className="data-packet"
-                        initial={{ x: -50, opacity: 0 }}
-                        animate={{ x: 0, opacity: 1 }}
-                        transition={{ delay: index * 0.2 }}
+                        initial={{x: -50, opacity: 0}}
+                        animate={{x: 0, opacity: 1}}
+                        transition={{delay: index * 0.2}}
                         style={{
                             backgroundColor: step.color,
                             position: 'relative',
@@ -221,7 +219,7 @@ const AnimationCanvas: React.FC<AnimationCanvasProps> = ({
                     >
                         <div
                             className="packet-label"
-                            style={{ color: step.color }}
+                            style={{color: step.color}}
                         >
                             {step.title}
                         </div>
