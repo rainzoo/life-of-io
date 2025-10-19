@@ -17,7 +17,7 @@
 }
 
 .metadata-display .panel-header p {
-    color: var(--text-medium);
+    color: #a0aec0; /* Replaced undefined --text-medium */
     font-size: 0.9rem;
 }
 
@@ -43,7 +43,7 @@
 
 .metadata-label {
     font-weight: bold;
-    color: var(--text-medium);
+    color: #a0aec0; /* Replaced undefined --text-medium */
 }
 
 .metadata-value {
@@ -74,5 +74,5 @@
 
 .legend-text {
     font-size: 0.9rem;
-    color: var(--text-medium);
+    color: #a0aec0; /* Replaced undefined --text-medium */
 }
