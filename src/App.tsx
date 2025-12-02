@@ -573,18 +573,16 @@ function LayerLane({ layer, active }: LayerLaneProps) {
     <div
       className={[
         "relative flex items-center justify-between rounded-lg border px-3 py-2 text-xs md:text-sm transition-all duration-300",
-        "backdrop-blur-sm",
         active
-          ? `${layer.colorClass} shadow-lg shadow-black/40 scale-[1.02]`
-          : "bg-muted/10 border-border/60 opacity-70",
+          ? "bg-slate-800 border-slate-600 shadow-md scale-[1.01]"
+          : "bg-slate-900/50 border-border/60 opacity-80",
       ].join(" ")}
     >
       <div className="flex items-center gap-2">
         <span
           className={[
-            "inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[0.65rem] font-semibold uppercase tracking-tight text-black",
-            active ? "bg-gradient-to-br" : "bg-muted text-foreground",
-            active ? layer.accentClass : "",
+            "inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[0.65rem] font-semibold uppercase tracking-tight",
+            active ? "bg-slate-700 text-slate-100" : "bg-slate-800 text-muted-foreground",
           ].join(" ")}
         >
           {layer.name
@@ -594,26 +592,12 @@ function LayerLane({ layer, active }: LayerLaneProps) {
             .slice(0, 2)}
         </span>
         <div className="flex flex-col">
-          <span className="font-medium leading-tight">{layer.name}</span>
+          <span className={`font-medium leading-tight ${active ? "text-slate-100" : "text-slate-300"}`}>{layer.name}</span>
           <span className="hidden text-[0.7rem] text-muted-foreground md:inline">
             {layer.description}
           </span>
         </div>
       </div>
-      {active && (
-        <div className="hidden h-2 w-12 shrink-0 overflow-hidden rounded-full bg-gradient-to-r from-transparent via-white/80 to-transparent md:block">
-          <div className="h-full w-full animate-pulse bg-gradient-to-r from-transparent via-white/70 to-transparent" />
-        </div>
-      )}
-      {active && (
-        <div
-          className={[
-            "pointer-events-none absolute inset-0 -z-10 rounded-lg opacity-40 blur-2xl",
-            "bg-gradient-to-r",
-            layer.accentClass,
-          ].join(" ")}
-        />
-      )}
     </div>
   );
 }
@@ -628,14 +612,13 @@ function PhaseBadge({ phase }: PhaseBadgeProps) {
     phase === "bash"
       ? "bg-emerald-500/15 text-emerald-300 border-emerald-400/60"
       : phase === "creation"
-      ? "bg-amber-500/15 text-amber-200 border-amber-400/60"
-      : "bg-purple-500/15 text-purple-200 border-purple-400/60";
+        ? "bg-amber-500/15 text-amber-200 border-amber-400/60"
+        : "bg-purple-500/15 text-purple-200 border-purple-400/60";
 
   return (
     <span
       className={[
         "inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[0.7rem] font-medium uppercase tracking-wide",
-        "backdrop-blur",
         phaseClass,
       ].join(" ")}
     >
@@ -705,17 +688,8 @@ function App() {
     [currentStep.layers],
   );
 
-  const phaseRanges = useMemo(
-    () => ({
-      bash: { start: 0, end: 5 },
-      creation: { start: 6, end: 20 },
-      write: { start: 21, end: maxIndex },
-    }),
-    [maxIndex],
-  );
-
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-foreground">
+    <div className="min-h-screen flex flex-col bg-slate-950 text-foreground">
       <header className="flex items-center justify-between gap-4 border-b border-border/60 px-4 py-3 md:px-6">
         <div className="flex flex-col gap-1">
           <h1 className="text-xl font-bold tracking-tight md:text-2xl">
@@ -755,8 +729,7 @@ function App() {
           <h2 className="mb-1 text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
             Step Details
           </h2>
-          <Card className="relative overflow-hidden border border-border/70 bg-slate-950/80 shadow-xl shadow-black/40">
-            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(148,163,184,0.25),_transparent_60%),radial-gradient(circle_at_bottom,_rgba(56,189,248,0.15),_transparent_65%)]" />
+          <Card className="relative overflow-hidden border border-border/70 bg-slate-900 shadow-lg">
             <CardHeader className="relative space-y-3">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <PhaseBadge phase={currentStep.phase} />
@@ -765,7 +738,7 @@ function App() {
                   {currentStep.stepLabel}
                 </span>
               </div>
-              <CardTitle className="text-lg md:text-xl">
+              <CardTitle className="text-lg font-bold text-slate-50 md:text-xl">
                 {currentStep.title}
               </CardTitle>
             </CardHeader>
@@ -799,7 +772,7 @@ function App() {
           </Card>
 
           {/* Mini flow indicator for active layers */}
-          <div className="hidden rounded-lg border border-border/70 bg-slate-950/80 p-3 text-xs text-muted-foreground md:block">
+          <div className="hidden rounded-lg border border-slate-600 bg-slate-800 p-3 text-xs text-muted-foreground md:block">
             <div className="mb-2 flex items-center justify-between gap-2">
               <span className="font-semibold text-slate-200">
                 Active flow in this step
@@ -827,7 +800,7 @@ function App() {
                       {layer.name}
                     </span>
                     {index < currentStep.layers.length - 1 && (
-                      <span className="mx-0.5 h-px w-5 bg-gradient-to-r from-slate-500/20 via-slate-300/80 to-slate-500/20" />
+                      <span className="mx-0.5 h-px w-5 bg-slate-500/40" />
                     )}
                   </div>
                 );
@@ -841,7 +814,7 @@ function App() {
           <h2 className="mb-1 text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
             Timeline
           </h2>
-          <Card className="flex h-full flex-col border border-border/70 bg-slate-950/80">
+          <Card className="flex h-full flex-col border border-border/70 bg-slate-900">
             <CardHeader className="space-y-2 pb-3">
               <div className="flex items-center justify-between gap-2">
                 <span className="text-sm font-medium text-slate-100">
@@ -887,19 +860,21 @@ function App() {
               <div className="space-y-3">
                 <div className="flex items-center justify-center gap-2">
                   <Button
-                    variant="ghost"
+                    variant="outline"
                     size="icon"
                     onClick={handleRestart}
                     aria-label="Restart from first step"
+                    className="border-slate-600 bg-slate-800 text-slate-100 hover:bg-slate-700 hover:text-white"
                   >
                     <RotateCcw className="h-5 w-5" />
                   </Button>
                   <Button
-                    variant="ghost"
+                    variant="outline"
                     size="icon"
                     onClick={handlePrev}
                     disabled={currentStepIndex === 0}
                     aria-label="Previous step"
+                    className="border-slate-600 bg-slate-800 text-slate-100 hover:bg-slate-700 hover:text-white disabled:opacity-50"
                   >
                     <SkipBack className="h-5 w-5" />
                   </Button>
@@ -908,6 +883,7 @@ function App() {
                     size="lg"
                     onClick={handlePlayPause}
                     aria-label={isPlaying ? "Pause playback" : "Play timeline"}
+                    className="bg-slate-700 text-white hover:bg-slate-600"
                   >
                     {isPlaying ? (
                       <Pause className="h-6 w-6" />
@@ -916,11 +892,12 @@ function App() {
                     )}
                   </Button>
                   <Button
-                    variant="ghost"
+                    variant="outline"
                     size="icon"
                     onClick={handleNext}
                     disabled={currentStepIndex === maxIndex}
                     aria-label="Next step"
+                    className="border-slate-600 bg-slate-800 text-slate-100 hover:bg-slate-700 hover:text-white disabled:opacity-50"
                   >
                     <SkipForward className="h-5 w-5" />
                   </Button>
@@ -929,7 +906,7 @@ function App() {
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex items-center gap-2">
                     <span className="text-xs text-muted-foreground">Speed</span>
-                    <div className="flex items-center gap-1 rounded-full border border-border/70 bg-slate-950/80 px-2 py-1">
+                    <div className="flex items-center gap-1 rounded-full border border-slate-600 bg-slate-800 px-2 py-1">
                       <Slider
                         min={1}
                         max={3}
@@ -949,7 +926,7 @@ function App() {
                 </div>
               </div>
 
-              <div className="hidden max-h-40 overflow-y-auto rounded-md border border-border/60 bg-slate-950/80 p-2 text-[0.7rem] md:block">
+              <div className="hidden max-h-40 overflow-y-auto rounded-md border border-slate-600 bg-slate-800 p-2 text-[0.7rem] md:block">
                 <div className="mb-1 text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
                   Quick step navigator
                 </div>
