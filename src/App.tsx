@@ -52,6 +52,38 @@ const PHASE_LABELS: Record<PhaseId, string> = {
   write: "Phase 2 – Data Write & Persistence",
 };
 
+// Layer grouping by category
+type LayerGroupId = "user-space" | "file-system" | "kernel" | "storage-device";
+
+interface LayerGroup {
+  id: LayerGroupId;
+  name: string;
+  layerIds: LayerId[];
+}
+
+const LAYER_GROUPS: LayerGroup[] = [
+  {
+    id: "user-space",
+    name: "User Space",
+    layerIds: ["bash"],
+  },
+  {
+    id: "file-system",
+    name: "File System",
+    layerIds: ["syscall-vfs", "ext4", "journal"],
+  },
+  {
+    id: "kernel",
+    name: "Kernel",
+    layerIds: ["page-cache", "block", "completion"],
+  },
+  {
+    id: "storage-device",
+    name: "Storage Device",
+    layerIds: ["nvme", "ssd-ftl", "nand"],
+  },
+];
+
 interface LayerLaneProps {
   layer: LayerDefinition;
   active: boolean;
@@ -202,14 +234,37 @@ function App() {
           <h2 className="mb-1 text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
             Layers
           </h2>
-          <div className="grid grid-cols-1 gap-2 md:grid-cols-1">
-            {LAYERS.map((layer) => (
-              <LayerLane
-                key={layer.id}
-                layer={layer}
-                active={activeLayerIds.has(layer.id)}
-              />
-            ))}
+          <div className="space-y-4">
+            {LAYER_GROUPS.map((group) => {
+              const groupLayers = LAYERS.filter((layer) =>
+                group.layerIds.includes(layer.id)
+              );
+              const hasActiveLayer = groupLayers.some((layer) =>
+                activeLayerIds.has(layer.id)
+              );
+
+              return (
+                <div key={group.id} className="space-y-2">
+                  <h3
+                    className={`text-[0.7rem] font-semibold uppercase tracking-[0.15em] ${hasActiveLayer
+                      ? "text-slate-200"
+                      : "text-muted-foreground"
+                      }`}
+                  >
+                    {group.name}
+                  </h3>
+                  <div className="space-y-1.5 pl-2 border-l-2 border-slate-700/50">
+                    {groupLayers.map((layer) => (
+                      <LayerLane
+                        key={layer.id}
+                        layer={layer}
+                        active={activeLayerIds.has(layer.id)}
+                      />
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </section>
 
