@@ -24,7 +24,6 @@ import {
   Info,
   List,
   X,
-  Menu
 } from "lucide-react";
 import visualizationData from "@/data/visualization-data.json";
 
