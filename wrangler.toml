@@ -1,0 +1,9 @@
+# Wrangler configuration for Cloudflare Pages development
+# This is for local development only: wrangler pages dev dist
+
+name = "life-of-io"
+pages_build_output_dir = "dist"
+
+# Production deployment can be done via:
+# 1. Git integration in Cloudflare dashboard
+# 2. Manual upload: wrangler pages publish dist --project-name=life-of-io
