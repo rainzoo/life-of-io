@@ -1,8 +1,31 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
-import { Pause, Play, RotateCcw, SkipBack, SkipForward } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  Pause,
+  Play,
+  RotateCcw,
+  SkipBack,
+  SkipForward,
+  Terminal,
+  HardDrive,
+  Database,
+  Zap,
+  ArrowRight,
+  ArrowDown,
+  Cpu,
+  MemoryStick,
+  CircuitBoard,
+  Server,
+  ChevronRight,
+  Info,
+  List,
+  X,
+  Menu
+} from "lucide-react";
 import visualizationData from "@/data/visualization-data.json";
 
 type PhaseId = "bash" | "creation" | "write";
@@ -84,42 +107,108 @@ const LAYER_GROUPS: LayerGroup[] = [
   },
 ];
 
+// Icon mapping for layers
+const getLayerIcon = (layerId: LayerId) => {
+  switch (layerId) {
+    case "bash":
+      return Terminal;
+    case "syscall-vfs":
+      return Cpu;
+    case "ext4":
+      return Database;
+    case "journal":
+      return HardDrive;
+    case "page-cache":
+      return MemoryStick;
+    case "block":
+      return Server;
+    case "nvme":
+      return CircuitBoard;
+    case "ssd-ftl":
+      return Zap;
+    case "nand":
+      return HardDrive;
+    case "completion":
+      return ChevronRight;
+    default:
+      return Info;
+  }
+};
+
 interface LayerLaneProps {
   layer: LayerDefinition;
   active: boolean;
 }
 
 function LayerLane({ layer, active }: LayerLaneProps) {
+  const IconComponent = getLayerIcon(layer.id);
+
   return (
-    <div
-      className={[
-        "relative flex items-center justify-between rounded-lg border px-3 py-2 text-xs md:text-sm transition-all duration-300",
-        active
-          ? "bg-slate-800 border-slate-600 shadow-md scale-[1.01]"
-          : "bg-slate-900/50 border-border/60 opacity-80",
-      ].join(" ")}
-    >
-      <div className="flex items-center gap-2">
-        <span
-          className={[
-            "inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[0.65rem] font-semibold uppercase tracking-tight",
-            active ? "bg-slate-700 text-slate-100" : "bg-slate-800 text-muted-foreground",
-          ].join(" ")}
-        >
-          {layer.name
-            .split(" ")
-            .map((word) => word[0])
-            .join("")
-            .slice(0, 2)}
-        </span>
-        <div className="flex flex-col">
-          <span className={`font-medium leading-tight ${active ? "text-slate-100" : "text-slate-300"}`}>{layer.name}</span>
-          <span className="hidden text-[0.7rem] text-muted-foreground md:inline">
-            {layer.description}
-          </span>
-        </div>
-      </div>
-    </div>
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <motion.div
+            initial={{ opacity: 0.8, scale: 1 }}
+            animate={{
+              opacity: active ? 1 : 0.8,
+              scale: active ? 1.01 : 1
+            }}
+            whileHover={{ scale: 1.02 }}
+            className={[
+              "relative flex items-center justify-between rounded-lg border px-3 py-2 text-xs md:text-sm cursor-pointer transition-all duration-300 group",
+              active
+                ? "bg-slate-800 border-slate-600 shadow-md shadow-slate-900/50"
+                : "bg-slate-900/50 border-border/60 hover:bg-slate-800/50 hover:border-border/80",
+            ].join(" ")}
+          >
+            <div className="flex items-center gap-3">
+              <div
+                className={[
+                  "flex h-8 w-8 shrink-0 items-center justify-center rounded-full transition-all duration-200",
+                  active
+                    ? "bg-gradient-to-br from-slate-700 to-slate-600 text-slate-100 shadow-sm"
+                    : "bg-slate-800 text-muted-foreground group-hover:bg-slate-700 group-hover:text-slate-200",
+                ].join(" ")}
+              >
+                <IconComponent
+                  className={`h-4 w-4 transition-transform duration-200 ${
+                    active ? "scale-110" : "group-hover:scale-105"
+                  }`}
+                />
+              </div>
+              <div className="flex flex-col min-w-0 flex-1">
+                <span className={`font-medium leading-tight truncate ${
+                  active
+                    ? "text-slate-100"
+                    : "text-slate-300 group-hover:text-slate-200"
+                }`}>
+                  {layer.name}
+                </span>
+                <span className="hidden text-[0.7rem] text-muted-foreground md:inline leading-tight">
+                  {layer.description}
+                </span>
+              </div>
+            </div>
+            {active && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="flex items-center gap-1 text-slate-400"
+              >
+                <ArrowRight className="h-3 w-3 animate-pulse" />
+                <span className="hidden text-[0.65rem] font-mono md:inline">ACTIVE</span>
+              </motion.div>
+            )}
+          </motion.div>
+        </TooltipTrigger>
+        <TooltipContent>
+          <div className="max-w-xs">
+            <p className="font-medium text-sm">{layer.name}</p>
+            <p className="text-xs text-muted-foreground mt-1">{layer.description}</p>
+          </div>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 }
 
@@ -153,6 +242,7 @@ function App() {
   const [currentStepIndex, setCurrentStepIndex] = useState<number>(0);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [speed, setSpeed] = useState<number>(1);
+  const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
 
   const maxIndex = STEPS.length - 1;
   const currentStep = STEPS[currentStepIndex];
@@ -178,6 +268,37 @@ function App() {
       setIsPlaying((prev) => !prev);
     }
   }, [currentStepIndex, maxIndex]);
+
+  // Keyboard navigation
+  useEffect(() => {
+    const handleKeyPress = (event: KeyboardEvent) => {
+      switch (event.key) {
+        case 'ArrowLeft':
+        case 'ArrowUp':
+          event.preventDefault();
+          if (!isPlaying) handlePrev();
+          break;
+        case 'ArrowRight':
+        case 'ArrowDown':
+        case ' ':
+          event.preventDefault();
+          if (!isPlaying) handleNext();
+          break;
+        case 'Enter':
+          event.preventDefault();
+          handlePlayPause();
+          break;
+        case 'r':
+        case 'R':
+          event.preventDefault();
+          handleRestart();
+          break;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [handlePrev, handleNext, handlePlayPause, handleRestart, isPlaying]);
 
   useEffect(() => {
     if (isPlaying && currentStepIndex < maxIndex) {
@@ -210,23 +331,34 @@ function App() {
   );
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-950 text-foreground">
-      <header className="flex items-center justify-between gap-4 border-b border-border/60 px-4 py-3 md:px-6">
-        <div className="flex flex-col gap-1">
-          <h1 className="text-xl font-bold tracking-tight md:text-2xl">
-            Linux File Creation & Persistence
-          </h1>
-          <p className="max-w-2xl text-[0.75rem] text-muted-foreground md:text-xs">
-            ext4 on SSD (Linux 6.x): from Bash command to NAND cells. Use the
-            controls below to walk step by step through the life of a single
-            write.
-          </p>
-        </div>
-        <div className="hidden items-center gap-2 text-xs text-muted-foreground md:flex">
-          <span className="h-2 w-2 rounded-full bg-emerald-400" />
-          <span>Interactive timeline · {STEPS.length} steps</span>
-        </div>
-      </header>
+    <TooltipProvider>
+      <div className="min-h-screen flex flex-col bg-slate-950 text-foreground">
+        <header className="flex items-center justify-between gap-4 border-b border-border/60 px-4 py-4 md:px-6">
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className="border-slate-600 bg-slate-800 text-slate-100 hover:bg-slate-700"
+              aria-label="Toggle step navigator sidebar"
+            >
+              <List className="h-4 w-4" />
+            </Button>
+          </div>
+          <div className="text-center">
+            <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-slate-100 mb-2">
+              Life of IO
+            </h1>
+            <h2 className="text-lg md:text-xl font-semibold text-slate-300 mb-1">
+              Linux File Creation & Persistence
+            </h2>
+            <p className="max-w-2xl text-[0.75rem] text-muted-foreground md:text-sm mx-auto">
+              ext4 on SSD (Linux 6.x): from Bash command to NAND cells. Use the
+              controls below to walk step by step through the life of a single
+              write.
+            </p>
+          </div>
+        </header>
 
       <main className="flex-1 flex flex-col gap-4 px-4 py-4 md:flex-row md:px-6 md:py-6">
         {/* Left: Layer lanes */}
@@ -253,14 +385,44 @@ function App() {
                   >
                     {group.name}
                   </h3>
-                  <div className="space-y-1.5 pl-2 border-l-2 border-slate-700/50">
-                    {groupLayers.map((layer) => (
-                      <LayerLane
-                        key={layer.id}
-                        layer={layer}
-                        active={activeLayerIds.has(layer.id)}
-                      />
-                    ))}
+                  <div className="space-y-1.5 pl-2 border-l-2 border-slate-700/50 relative">
+                    {groupLayers.map((layer, index) => {
+                      const isActive = activeLayerIds.has(layer.id);
+                      const nextLayer = groupLayers[index + 1];
+                      const nextIsActive = nextLayer && activeLayerIds.has(nextLayer.id);
+                      const showFlow = isActive && nextIsActive;
+
+                      return (
+                        <div key={layer.id} className="relative">
+                          <LayerLane
+                            layer={layer}
+                            active={isActive}
+                          />
+                          {showFlow && (
+                            <motion.div
+                              initial={{ opacity: 0, scale: 0 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              transition={{ delay: 0.3, duration: 0.4 }}
+                              className="absolute left-[-13px] top-[calc(100%+4px)] z-10"
+                            >
+                              <motion.div
+                                animate={{
+                                  y: [0, 8, 0],
+                                }}
+                                transition={{
+                                  duration: 1.5,
+                                  repeat: Infinity,
+                                  ease: "easeInOut"
+                                }}
+                                className="text-slate-400"
+                              >
+                                <ArrowDown className="h-3 w-3" />
+                              </motion.div>
+                            </motion.div>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               );
@@ -273,47 +435,93 @@ function App() {
           <h2 className="mb-1 text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
             Step Details
           </h2>
-          <Card className="relative overflow-hidden border border-border/70 bg-slate-900 shadow-lg">
-            <CardHeader className="relative space-y-3">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <PhaseBadge phase={currentStep.phase} />
-                <span className="rounded-full border border-border/60 bg-slate-900/80 px-3 py-1 text-[0.7rem] font-mono text-muted-foreground">
-                  Step {currentStepIndex + 1} of {STEPS.length} · label{" "}
-                  {currentStep.stepLabel}
-                </span>
-              </div>
-              <CardTitle className="text-lg font-bold text-slate-50 md:text-xl">
-                {currentStep.title}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="relative space-y-4 pb-6">
-              <p className="text-sm leading-relaxed text-slate-200">
-                {currentStep.description}
-              </p>
-              <div className="grid gap-3 text-xs md:grid-cols-2">
-                {currentStep.kernelDetails && (
-                  <div className="rounded-lg border border-slate-700/80 bg-slate-950/80 p-3">
-                    <h3 className="mb-1 text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-sky-300/90">
-                      Kernel Focus
-                    </h3>
-                    <p className="text-[0.78rem] text-slate-200">
-                      {currentStep.kernelDetails}
-                    </p>
-                  </div>
-                )}
-                {currentStep.hardwareDetails && (
-                  <div className="rounded-lg border border-slate-700/80 bg-slate-950/80 p-3">
-                    <h3 className="mb-1 text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-amber-300/90">
-                      Hardware & SSD View
-                    </h3>
-                    <p className="text-[0.78rem] text-slate-200">
-                      {currentStep.hardwareDetails}
-                    </p>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+          <motion.div
+            key={`step-${currentStepIndex}`}
+            initial={{ opacity: 0, y: 10, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{
+              duration: 0.4,
+              ease: [0.4, 0.0, 0.2, 1],
+            }}
+          >
+            <Card className="relative overflow-hidden border border-border/70 bg-slate-900 shadow-lg">
+              <CardHeader className="relative space-y-3">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 0.1, duration: 0.3 }}
+                  >
+                    <PhaseBadge phase={currentStep.phase} />
+                  </motion.div>
+                  <motion.span
+                    initial={{ opacity: 0, x: 10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.15, duration: 0.3 }}
+                    className="rounded-full border border-border/60 bg-slate-900/80 px-3 py-1 text-[0.7rem] font-mono text-muted-foreground"
+                  >
+                    Step {currentStep.stepLabel} · {currentStepIndex + 1} of {STEPS.length}
+                  </motion.span>
+                </div>
+                <motion.div
+                  initial={{ opacity: 0, y: 5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2, duration: 0.4 }}
+                >
+                  <CardTitle className="text-lg font-bold text-slate-50 md:text-xl">
+                    {currentStep.title}
+                  </CardTitle>
+                </motion.div>
+              </CardHeader>
+              <CardContent className="relative space-y-4 pb-6">
+                <motion.p
+                  initial={{ opacity: 0, y: 5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.25, duration: 0.4 }}
+                  className="text-sm leading-relaxed text-slate-200"
+                >
+                  {currentStep.description}
+                </motion.p>
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3, duration: 0.4 }}
+                  className="grid gap-3 text-xs md:grid-cols-2"
+                >
+                  {currentStep.kernelDetails && (
+                    <motion.div
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.35, duration: 0.3 }}
+                      className="rounded-lg border border-slate-700/80 bg-slate-950/80 p-3"
+                    >
+                      <h3 className="mb-1 text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-sky-300/90">
+                        Kernel Focus
+                      </h3>
+                      <p className="text-[0.78rem] text-slate-200">
+                        {currentStep.kernelDetails}
+                      </p>
+                    </motion.div>
+                  )}
+                  {currentStep.hardwareDetails && (
+                    <motion.div
+                      initial={{ opacity: 0, x: 10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.35, duration: 0.3 }}
+                      className="rounded-lg border border-slate-700/80 bg-slate-950/80 p-3"
+                    >
+                      <h3 className="mb-1 text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-amber-300/90">
+                        Hardware & SSD View
+                      </h3>
+                      <p className="text-[0.78rem] text-slate-200">
+                        {currentStep.hardwareDetails}
+                      </p>
+                    </motion.div>
+                  )}
+                </motion.div>
+              </CardContent>
+            </Card>
+          </motion.div>
 
           {/* Mini flow indicator for active layers */}
           <div className="hidden rounded-lg border border-slate-600 bg-slate-800 p-3 text-xs text-muted-foreground md:block">
@@ -464,46 +672,109 @@ function App() {
                       </span>
                     </div>
                   </div>
-                  <span className="hidden text-[0.7rem] text-muted-foreground md:inline">
-                    Use ← / → keys to nudge steps when focused on slider.
-                  </span>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className="hidden text-[0.7rem] text-muted-foreground md:inline cursor-help underline decoration-dotted underline-offset-2">
+                          Keyboard shortcuts available
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <div className="max-w-xs">
+                          <p className="font-medium text-sm mb-2">Keyboard Navigation</p>
+                          <div className="space-y-1 text-xs">
+                            <p><code className="bg-slate-700 px-1 rounded">←/→</code> Previous/Next step</p>
+                            <p><code className="bg-slate-700 px-1 rounded">Space/Enter</code> Play/Pause</p>
+                            <p><code className="bg-slate-700 px-1 rounded">R</code> Restart from beginning</p>
+                          </div>
+                        </div>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </div>
               </div>
 
-              <div className="hidden max-h-40 overflow-y-auto rounded-md border border-slate-600 bg-slate-800 p-2 text-[0.7rem] md:block">
-                <div className="mb-1 text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                  Quick step navigator
-                </div>
-                <div className="grid grid-cols-2 gap-1">
-                  {STEPS.map((step) => (
-                    <button
-                      key={step.id}
-                      type="button"
-                      onClick={() => {
-                        setCurrentStepIndex(step.id);
-                        setIsPlaying(false);
-                      }}
-                      className={[
-                        "flex items-center justify-between gap-1 rounded px-1.5 py-1 text-left transition-colors",
-                        currentStepIndex === step.id
-                          ? "bg-sky-500/20 text-sky-100"
-                          : "bg-transparent text-slate-300 hover:bg-slate-800/80",
-                      ].join(" ")}
-                    >
-                      <span className="font-mono text-[0.68rem]">
-                        {step.stepLabel}
-                      </span>
-                      <span className="line-clamp-1 flex-1 text-[0.68rem]">
-                        {step.title}
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              </div>
+
             </CardContent>
           </Card>
         </section>
       </main>
+
+      {/* Collapsible Sidebar */}
+      <AnimatePresence>
+        {sidebarOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/50 z-40"
+              onClick={() => setSidebarOpen(false)}
+            />
+            <motion.div
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ type: "tween", duration: 0.3 }}
+              className="fixed right-0 top-0 h-full w-80 bg-slate-900 border-l border-slate-700 z-50 flex flex-col"
+            >
+              <div className="flex items-center justify-between p-4 border-b border-slate-700">
+                <h3 className="text-lg font-semibold text-slate-100">Step Navigator</h3>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setSidebarOpen(false)}
+                  className="text-slate-400 hover:text-slate-100"
+                >
+                  <X className="h-5 w-5" />
+                </Button>
+              </div>
+              <div className="flex-1 overflow-y-auto p-4">
+                <div className="space-y-1">
+                  {STEPS.map((step, index) => {
+                    const phaseColor =
+                      step.phase === "bash"
+                        ? "text-emerald-300"
+                        : step.phase === "creation"
+                        ? "text-amber-200"
+                        : "text-purple-200";
+
+                    return (
+                      <button
+                        key={step.id}
+                        type="button"
+                        onClick={() => {
+                          setCurrentStepIndex(index);
+                          setIsPlaying(false);
+                          setSidebarOpen(false);
+                        }}
+                        className={`w-full p-3 rounded-lg text-left transition-all duration-200 ${
+                          currentStepIndex === index
+                            ? "bg-slate-700 border border-slate-600"
+                            : "hover:bg-slate-800/50 border border-transparent hover:border-slate-700"
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <span className={`font-mono text-sm font-medium ${phaseColor}`}>
+                            {step.stepLabel}
+                          </span>
+                          <div className="flex-1 min-w-0">
+                            <p className={`text-sm font-medium truncate ${
+                              currentStepIndex === index ? "text-slate-100" : "text-slate-300"
+                            }`}>
+                              {step.title}
+                            </p>
+                          </div>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
       <footer className="border-t border-border/60 px-4 py-3 text-[0.7rem] text-muted-foreground md:px-6">
         <div className="flex flex-col items-start justify-between gap-2 md:flex-row md:items-center">
@@ -515,12 +786,13 @@ function App() {
             on ext4 over an SSD with TRIM, NCQ, and an FTL.
           </span>
           <span>
-            Phases: Bash (0.1–0.6), Creation (1–15), Write &amp; Persistence
+            Phases: Bash (0.1–0.6), Creation (1–15), Write & Persistence
             (16–34).
           </span>
         </div>
       </footer>
-    </div>
+      </div>
+    </TooltipProvider>
   );
 }
 
