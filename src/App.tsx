@@ -10,26 +10,17 @@ import {
   RotateCcw,
   SkipBack,
   SkipForward,
-  Terminal,
-  HardDrive,
-  Database,
-  Zap,
-  ArrowRight,
   ArrowDown,
-  Cpu,
-  MemoryStick,
-  CircuitBoard,
-  Server,
-  ChevronRight,
-  Info,
   List,
   X,
 } from "lucide-react";
 import visualizationData from "@/data/visualization-data.json";
+import { LayerLane } from "@/components/viz/LayerLane";
+import { PhaseBadge } from "@/components/viz/PhaseBadge";
 
-type PhaseId = "bash" | "creation" | "write";
+export type PhaseId = "bash" | "creation" | "write";
 
-type LayerId =
+export type LayerId =
   | "bash"
   | "syscall-vfs"
   | "ext4"
@@ -41,7 +32,7 @@ type LayerId =
   | "nand"
   | "completion";
 
-interface VisualizationStep {
+export interface VisualizationStep {
   id: number;
   /** Human-facing label, e.g. \"0.1\", \"17\" */
   stepLabel: string;
@@ -53,7 +44,7 @@ interface VisualizationStep {
   layers: LayerId[];
 }
 
-interface LayerDefinition {
+export interface LayerDefinition {
   id: LayerId;
   name: string;
   description: string;
@@ -64,15 +55,6 @@ interface LayerDefinition {
 // Import data from JSON file
 const LAYERS: LayerDefinition[] = visualizationData.layers as LayerDefinition[];
 const STEPS: VisualizationStep[] = visualizationData.steps as VisualizationStep[];
-
-// Old step definitions removed - data now loaded from JSON file
-// Removed 450+ lines of hardcoded step data
-
-const PHASE_LABELS: Record<PhaseId, string> = {
-  bash: "Phase 0 – Bash & User Space",
-  creation: "Phase 1 – File Creation",
-  write: "Phase 2 – Data Write & Persistence",
-};
 
 // Layer grouping by category
 type LayerGroupId = "user-space" | "file-system" | "kernel" | "storage-device";
@@ -105,135 +87,6 @@ const LAYER_GROUPS: LayerGroup[] = [
     layerIds: ["nvme", "ssd-ftl", "nand"],
   },
 ];
-
-// Icon mapping for layers
-const getLayerIcon = (layerId: LayerId) => {
-  switch (layerId) {
-    case "bash":
-      return Terminal;
-    case "syscall-vfs":
-      return Cpu;
-    case "ext4":
-      return Database;
-    case "journal":
-      return HardDrive;
-    case "page-cache":
-      return MemoryStick;
-    case "block":
-      return Server;
-    case "nvme":
-      return CircuitBoard;
-    case "ssd-ftl":
-      return Zap;
-    case "nand":
-      return HardDrive;
-    case "completion":
-      return ChevronRight;
-    default:
-      return Info;
-  }
-};
-
-interface LayerLaneProps {
-  layer: LayerDefinition;
-  active: boolean;
-}
-
-function LayerLane({ layer, active }: LayerLaneProps) {
-  const IconComponent = getLayerIcon(layer.id);
-
-  return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <motion.div
-            initial={{ opacity: 0.8, scale: 1 }}
-            animate={{
-              opacity: active ? 1 : 0.8,
-              scale: active ? 1.01 : 1
-            }}
-            whileHover={{ scale: 1.02 }}
-            className={[
-              "relative flex items-center justify-between rounded-lg border px-3 py-2 text-xs md:text-sm cursor-pointer transition-all duration-300 group",
-              active
-                ? "bg-slate-800 border-slate-600 shadow-md shadow-slate-900/50"
-                : "bg-slate-900/50 border-border/60 hover:bg-slate-800/50 hover:border-border/80",
-            ].join(" ")}
-          >
-            <div className="flex items-center gap-3">
-              <div
-                className={[
-                  "flex h-8 w-8 shrink-0 items-center justify-center rounded-full transition-all duration-200",
-                  active
-                    ? "bg-gradient-to-br from-slate-700 to-slate-600 text-slate-100 shadow-sm"
-                    : "bg-slate-800 text-muted-foreground group-hover:bg-slate-700 group-hover:text-slate-200",
-                ].join(" ")}
-              >
-                <IconComponent
-                  className={`h-4 w-4 transition-transform duration-200 ${active ? "scale-110" : "group-hover:scale-105"
-                    }`}
-                />
-              </div>
-              <div className="flex flex-col min-w-0 flex-1">
-                <span className={`font-medium leading-tight truncate ${active
-                  ? "text-slate-100"
-                  : "text-slate-300 group-hover:text-slate-200"
-                  }`}>
-                  {layer.name}
-                </span>
-                <span className="hidden text-[0.7rem] text-muted-foreground md:inline leading-tight">
-                  {layer.description}
-                </span>
-              </div>
-            </div>
-            {active && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="flex items-center gap-1 text-slate-400"
-              >
-                <ArrowRight className="h-3 w-3 animate-pulse" />
-                <span className="hidden text-[0.65rem] font-mono md:inline">ACTIVE</span>
-              </motion.div>
-            )}
-          </motion.div>
-        </TooltipTrigger>
-        <TooltipContent>
-          <div className="max-w-xs">
-            <p className="font-medium text-sm">{layer.name}</p>
-            <p className="text-xs text-muted-foreground mt-1">{layer.description}</p>
-          </div>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
-  );
-}
-
-interface PhaseBadgeProps {
-  phase: PhaseId;
-}
-
-function PhaseBadge({ phase }: PhaseBadgeProps) {
-  const label = PHASE_LABELS[phase];
-  const phaseClass =
-    phase === "bash"
-      ? "bg-emerald-500/15 text-emerald-300 border-emerald-400/60"
-      : phase === "creation"
-        ? "bg-amber-500/15 text-amber-200 border-amber-400/60"
-        : "bg-purple-500/15 text-purple-200 border-purple-400/60";
-
-  return (
-    <span
-      className={[
-        "inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[0.7rem] font-medium uppercase tracking-wide",
-        phaseClass,
-      ].join(" ")}
-    >
-      <span className="h-1.5 w-1.5 rounded-full bg-current" />
-      {label}
-    </span>
-  );
-}
 
 function App() {
   const [currentStepIndex, setCurrentStepIndex] = useState<number>(0);
@@ -304,9 +157,7 @@ function App() {
         handleNext();
       }, interval);
       return () => clearTimeout(timer);
-    }
-
-    if (currentStepIndex === maxIndex) {
+    } else if (currentStepIndex === maxIndex) {
       setIsPlaying(false);
     }
   }, [currentStepIndex, handleNext, isPlaying, maxIndex, speed]);
