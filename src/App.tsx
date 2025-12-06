@@ -767,17 +767,23 @@ function App() {
         </AnimatePresence>
 
         <footer className="border-t border-border/60 px-4 py-3 text-[0.7rem] text-muted-foreground md:px-6">
-          <div className="flex flex-col items-start justify-between gap-2 md:flex-row md:items-center">
-            <span>
+          <div className="flex flex-col items-center justify-between gap-2 md:flex-row md:items-center">
+            <a
+              href="https://code.manas.me"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-semibold text-slate-200 hover:underline"
+            >
+                Built with ❤️ by Manas
+            </a>
+            <span className="text-center md:text-left">
               Visualizing the{" "}
               <span className="font-semibold text-slate-200">
                 life of a single I/O
               </span>{" "}
               on ext4 over an SSD with TRIM, NCQ, and an FTL.
             </span>
-            <span>
-              Phases: Bash (0.1–0.6), Creation (1–15), Write & Persistence
-              (16–34).
+            <span className="text-center md:text-right">
             </span>
           </div>
         </footer>
