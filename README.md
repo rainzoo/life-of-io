@@ -1,38 +1,58 @@
 # Life of IO
 
-Visualize how file creation works in Linux under the hood. It provides a step-by-step animation of the process, making it easier to understand the interactions between different system components.
+Visualize the life of a single I/O operation in Linux: from file creation command to data persistence on disk. This interactive web application provides a step-by-step animation that reveals the complex interactions between user space, file systems, kernel subsystems, and SSD hardware, making low-level I/O operations accessible and understandable.
 
 ## 🚀 Features
 
-*   **Step-by-step animation:** Visualizes the flow of I/O operations in a clear and sequential manner.
-*   **Playback controls:** Play, pause, step forward, step backward, and restart the animation.
-*   **Speed control:** Adjust the animation speed to your preference.
-*   **Keyboard navigation:** Use arrow keys, spacebar, and R key for intuitive control.
-*   **Responsive design:** Works perfectly on desktop, tablet, and mobile devices.
-*   **Metadata display:** Shows detailed information about each step of the animation.
-*   **Interactive timeline:** Click and drag to jump to any step instantly.
+*   **Interactive Timeline:** Navigate through 34+ steps of I/O operations with play/pause controls
+*   **Layer-by-layer Visualization:** See data flow across User Space, File System (ext4), Kernel subsystems, and NVMe/SSD hardware
+*   **Playback Controls:** Play, pause, step forward/backward, restart, and speed adjustment (1x-3x)
+*   **Keyboard Navigation:** Arrow keys for prev/next, Space/Enter for play/pause, R for restart
+*   **Responsive Design:** Optimized layouts for desktop, tablet, and mobile devices
+*   **Detailed Metadata:** Kernel and hardware focus sections explain each step's technical details
+*   **Interactive Slider:** Jump directly to any step in the I/O path
+*   **Phase Overview:** Colored sections for Bash command, File creation, and Data persistence
+*   **Collapsible Step Navigator:** Quick access to jump between visualization steps
 
 ## 🛠 Implementation
 
-- Built with React 18 and TypeScript
-- Styled with Tailwind CSS and shadcn/ui components
-- Animations powered by Framer Motion
-- Vite for fast development and optimized builds
+- Built with React 18, TypeScript, and Suspense for optimized performance
+- Styled with Tailwind CSS and shadcn/ui component library
+- Smooth animations powered by Framer Motion with AnimatePresence
+- Fast development and production builds with Vite
+- Static deployment ready with SPA routing support
+
+## 📊 Data Structure
+
+The visualization is structured in three main phases with detailed step-by-step progression:
+
+### Phases
+1. **Bash** (Steps 0.1–0.6): User space command execution
+2. **Creation** (Steps 1–15): File creation and metadata operations
+3. **Write & Persist** (Steps 16–34): Data writing and persistence
+
+### Layers Overview
+The I/O path spans multiple system layers:
+
+- **User Space**: `bash` shell execution
+- **File System**: `syscall-vfs`, `ext4` file system, `journal` (JBD2)
+- **Kernel**: `page-cache`, `block` layer I/O scheduling, `completion` queue
+- **Storage Device**: `nvme` driver, `ssd-ftl` flash translation layer, `nand` flash memory
+
+Each step highlights active layers and provides kernel/hardware-specific technical context.
 
 ## 🚀 Deployment
 
-### Cloudflare Pages
+### Cloudflare Pages (Recommended)
 
-This project is configured for seamless deployment on Cloudflare Pages:
+This project is optimized for Cloudflare Pages static hosting:
 
-1. **Connect your repository** to Cloudflare Pages
-2. **Build settings:**
+1. **Repository Connection**: Link your GitHub/GitLab repository
+2. **Build Configuration:**
    - Build command: `npm run build`
-   - Build output directory: `dist` (automatically configured)
-3. **Environment variables:** None required
-4. **SPA routing:** Automatic fallback to `index.html` configured
-
-The `_redirects` file in the `public` directory ensures all routes serve your React SPA correctly.
+   - Build output: `dist/`
+   - Node.js version: 18+
+3. **Automatic Routing**: SPA fallback handled by `_redirects` file
 
 ### Local Development
 
@@ -40,34 +60,57 @@ The `_redirects` file in the `public` directory ensures all routes serve your Re
 # Install dependencies
 npm install
 
-# Development with Vite (recommended)
-npm run dev  # → http://localhost:5174
+# Development server with hot reload
+npm run dev  # → http://localhost:5173
 
-# OR: Development with Wrangler (Cloudflare Pages simulation)
-# First install wrangler globally: npm install -g wrangler
-# Then build and serve locally:
+# OR: Cloudflare Pages simulation
 npm run build && npx wrangler pages dev dist  # → http://localhost:8788
 
-# Build for production
+# Production build
 npm run build
 
-# Preview production build locally
+# Preview build locally
 npm run preview
 ```
 
-### Manual Deploy
+### Manual Deployment
 
 ```bash
-# Build the project
+# Build for production
 npm run build
 
-# Deploy the dist folder to any static hosting service
-# Cloudflare Pages, Vercel, Netlify, etc. will all work seamlessly
+# Deploy dist/ directory contents to any static hosting provider
+# Compatible with: Cloudflare Pages, Vercel, Netlify, GitHub Pages, etc.
 ```
 
-## 🏗 Architecture
+## 🏗 Project Structure
 
-- `src/App.tsx`: Main application component with timeline logic
-- `src/data/visualization-data.json`: Step definitions and metadata
-- `src/components/ui/`: Reusable UI components (shadcn/ui)
-- `public/_redirects`: SPA routing configuration
+```
+src/
+├── App.tsx                    # Main application with state management and controls
+├── main.tsx                   # React application entry point
+├── index.css                  # Tailwind CSS styles and theme variables
+├── assets/                    # Static assets (favicon, images)
+├── components/
+│   ├── ui/                    # shadcn/ui component library re-exports
+│   └── viz/                   # Custom visualization components
+│       ├── LayerLane.tsx      # Individual layer components with icons
+│       └── PhaseBadge.tsx     # Phase indicator badges
+├── data/
+│   └── visualization-data.json  # Complete I/O step definitions and metadata
+├── lib/
+│   └── utils.ts               # Utility functions
+└── types/                     # TypeScript type definitions
+
+public/
+├── _redirects                 # SPA routing configuration for static hosting
+├── favicon.svg                # Site favicon
+└── ...
+```
+
+## 🔧 Configuration
+
+- **ESLint**: Flat config with React hooks and refresh rules
+- **TypeScript**: Strict mode with path mapping
+- **Vite**: Optimized for React with preload and minification
+- **Tailwind**: Responsive design with dark theme support
