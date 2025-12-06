@@ -1,4 +1,4 @@
-import type { PhaseId } from "@/App";
+export type PhaseId = "bash" | "creation" | "write";
 
 const PHASE_LABELS: Record<PhaseId, string> = {
   bash: "Phase 0 – Bash & User Space",

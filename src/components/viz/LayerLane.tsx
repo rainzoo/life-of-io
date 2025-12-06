@@ -13,7 +13,26 @@ import {
   ChevronRight,
   Info,
 } from "lucide-react";
-import type { LayerDefinition, LayerId } from "@/App";
+
+export type LayerId =
+  | "bash"
+  | "syscall-vfs"
+  | "ext4"
+  | "journal"
+  | "page-cache"
+  | "block"
+  | "nvme"
+  | "ssd-ftl"
+  | "nand"
+  | "completion";
+
+export interface LayerDefinition {
+  id: LayerId;
+  name: string;
+  description: string;
+  colorClass: string;
+  accentClass: string;
+}
 
 // Icon mapping for layers
 const getLayerIcon = (layerId: LayerId) => {

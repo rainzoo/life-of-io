@@ -15,22 +15,8 @@ import {
   X,
 } from "lucide-react";
 import visualizationData from "@/data/visualization-data.json";
-import { LayerLane } from "@/components/viz/LayerLane";
-import { PhaseBadge } from "@/components/viz/PhaseBadge";
-
-export type PhaseId = "bash" | "creation" | "write";
-
-export type LayerId =
-  | "bash"
-  | "syscall-vfs"
-  | "ext4"
-  | "journal"
-  | "page-cache"
-  | "block"
-  | "nvme"
-  | "ssd-ftl"
-  | "nand"
-  | "completion";
+import { LayerLane, LayerDefinition, LayerId } from "@/components/viz/LayerLane";
+import { PhaseBadge, PhaseId } from "@/components/viz/PhaseBadge";
 
 export interface VisualizationStep {
   id: number;
@@ -42,14 +28,6 @@ export interface VisualizationStep {
   kernelDetails?: string;
   hardwareDetails?: string;
   layers: LayerId[];
-}
-
-export interface LayerDefinition {
-  id: LayerId;
-  name: string;
-  description: string;
-  colorClass: string;
-  accentClass: string;
 }
 
 // Import data from JSON file
