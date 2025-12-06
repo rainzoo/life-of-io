@@ -76,7 +76,13 @@ function App() {
   const currentStep = STEPS[currentStepIndex];
 
   const handleNext = useCallback(() => {
-    setCurrentStepIndex((prev) => Math.min(prev + 1, maxIndex));
+    setCurrentStepIndex((prev) => {
+      const next = Math.min(prev + 1, maxIndex);
+      if (next === maxIndex) {
+        setIsPlaying(false);
+      }
+      return next;
+    });
   }, [maxIndex]);
 
   const handlePrev = useCallback(() => {
@@ -135,8 +141,6 @@ function App() {
         handleNext();
       }, interval);
       return () => clearTimeout(timer);
-    } else if (currentStepIndex === maxIndex) {
-      setIsPlaying(false);
     }
   }, [currentStepIndex, handleNext, isPlaying, maxIndex, speed]);
 

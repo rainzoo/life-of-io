@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+import { motion } from 'framer-motion';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   Terminal,
@@ -11,7 +11,6 @@ import {
   CircuitBoard,
   Server,
   ChevronRight,
-  Info,
 } from "lucide-react";
 
 export type LayerId =
@@ -35,31 +34,17 @@ export interface LayerDefinition {
 }
 
 // Icon mapping for layers
-const getLayerIcon = (layerId: LayerId) => {
-  switch (layerId) {
-    case "bash":
-      return Terminal;
-    case "syscall-vfs":
-      return Cpu;
-    case "ext4":
-      return Database;
-    case "journal":
-      return HardDrive;
-    case "page-cache":
-      return MemoryStick;
-    case "block":
-      return Server;
-    case "nvme":
-      return CircuitBoard;
-    case "ssd-ftl":
-      return Zap;
-    case "nand":
-      return HardDrive;
-    case "completion":
-      return ChevronRight;
-    default:
-      return Info;
-  }
+const layerIcons = {
+  bash: Terminal,
+  "syscall-vfs": Cpu,
+  ext4: Database,
+  journal: HardDrive,
+  "page-cache": MemoryStick,
+  block: Server,
+  nvme: CircuitBoard,
+  "ssd-ftl": Zap,
+  nand: HardDrive,
+  completion: ChevronRight,
 };
 
 interface LayerLaneProps {
@@ -68,7 +53,7 @@ interface LayerLaneProps {
 }
 
 export function LayerLane({ layer, active }: LayerLaneProps) {
-  const IconComponent = getLayerIcon(layer.id);
+  const IconComponent = layerIcons[layer.id];
 
   return (
     <TooltipProvider>
