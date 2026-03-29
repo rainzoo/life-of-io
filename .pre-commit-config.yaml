@@ -1,0 +1,53 @@
+repos: # 1. General Hygiene & Security
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-json
+      - id: check-toml
+      - id: check-added-large-files
+        args: [ "--maxkb=500" ]
+      - id: check-merge-conflict
+      - id: detect-private-key
+
+  # 2. Secret Scanning (Highly Recommended)
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.30.0
+    hooks:
+      - id: gitleaks
+
+  # 3. Spelling & Typos (Across all file types)
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.4.2
+    hooks:
+      - id: codespell
+        args: [ "--skip=*.lock,package.json,package-lock.json" ]
+
+  # 4. GitHub Actions / Schema Validation
+  - repo: https://github.com/python-jsonschema/check-jsonschema
+    rev: 0.37.1
+    hooks:
+      - id: check-github-workflows
+
+  # React/JS: Biome & Knip
+  - repo: https://github.com/biomejs/pre-commit
+    rev: v2.4.9
+    hooks:
+      - id: biome-check
+        name: biome-check
+        entry: npx biome check --write
+        language: node
+        pass_filenames: false
+        always_run: true
+
+  - repo: local
+    hooks:
+      - id: knip
+        name: knip
+        entry: npx knip
+        language: node
+        pass_filenames: false
+        always_run: true
+        description: "Find unused files, dependencies, and exports in JS/TS projects."

@@ -24,3 +24,7 @@ dist-ssr
 *.sw?
 .wrangler
 /.idea/
+.agents/*
+.agent/*
+.cline/*
+
