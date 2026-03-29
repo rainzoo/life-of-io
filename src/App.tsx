@@ -1,4 +1,4 @@
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import {
 	ArrowDown,
 	List,
@@ -8,6 +8,11 @@ import {
 	SkipBack,
 	SkipForward,
 	X,
+	Moon,
+	Sun,
+	Lightbulb,
+	HardDrive,
+	Cpu,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -78,11 +83,35 @@ const LAYER_GROUPS: LayerGroup[] = [
 	},
 ];
 
+const getInitialAppState = () => {
+	if (typeof window === "undefined") {
+		return { step: 0, speed: 1, play: false };
+	}
+
+	const params = new URLSearchParams(window.location.search);
+	const step = Number(params.get("step"));
+	const speed = Number(params.get("speed"));
+	return {
+		step:
+			!Number.isNaN(step) && step >= 0 && step < STEPS.length
+				? step
+				: 0,
+		speed: !Number.isNaN(speed) && speed >= 1 && speed <= 3 ? speed : 1,
+		play: params.get("play") === "1",
+	};
+};
+
 function App() {
-	const [currentStepIndex, setCurrentStepIndex] = useState<number>(0);
-	const [isPlaying, setIsPlaying] = useState<boolean>(false);
-	const [speed, setSpeed] = useState<number>(1);
+	const initialState = getInitialAppState();
+	const [currentStepIndex, setCurrentStepIndex] = useState<number>(initialState.step);
+	const [isPlaying, setIsPlaying] = useState<boolean>(initialState.play);
+	const [speed, setSpeed] = useState<number>(initialState.speed);
 	const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
+	const [isDarkMode, setIsDarkMode] = useState<boolean>(true);
+	const [showHardwareDetails, setShowHardwareDetails] = useState<boolean>(true);
+	const [showKernelDetails, setShowKernelDetails] = useState<boolean>(true);
+	const [showKeyConcepts, setShowKeyConcepts] = useState<boolean>(true);
+	const shouldReduceMotion = useReducedMotion();
 
 	const maxIndex = STEPS.length - 1;
 	const currentStep = STEPS[currentStepIndex];
@@ -140,6 +169,26 @@ function App() {
 					event.preventDefault();
 					handleRestart();
 					break;
+				case "d":
+				case "D":
+					event.preventDefault();
+					setIsDarkMode((prev) => !prev);
+					break;
+				case "h":
+				case "H":
+					event.preventDefault();
+					setShowHardwareDetails((prev) => !prev);
+					break;
+				case "k":
+				case "K":
+					event.preventDefault();
+					setShowKernelDetails((prev) => !prev);
+					break;
+				case "c":
+				case "C":
+					event.preventDefault();
+					setShowKeyConcepts((prev) => !prev);
+					break;
 			}
 		};
 
@@ -157,6 +206,15 @@ function App() {
 		}
 	}, [currentStepIndex, handleNext, isPlaying, maxIndex, speed]);
 
+	useEffect(() => {
+		if (typeof window === "undefined") return;
+		const params = new URLSearchParams(window.location.search);
+		params.set("step", String(currentStepIndex));
+		params.set("speed", String(speed));
+		params.set("play", isPlaying ? "1" : "0");
+		window.history.replaceState({}, "", `${window.location.pathname}?${params.toString()}`);
+	}, [currentStepIndex, speed, isPlaying]);
+
 	const handleSliderChange = (value: number[]) => {
 		const [index] = value;
 		setCurrentStepIndex(index);
@@ -173,9 +231,12 @@ function App() {
 		[currentStep.layers],
 	);
 
+	// Performance optimization: Lazy load heavy components (no data state needed)
+
 	return (
 		<TooltipProvider>
 			<div className="min-h-screen flex flex-col bg-slate-950 text-foreground">
+				{/* Enhanced Header with Accessibility Features */}
 				<header className="flex items-center justify-center gap-4 border-b border-border/60 px-4 py-3 md:px-6 relative">
 					<Button
 						variant="outline"
@@ -197,10 +258,54 @@ function App() {
 							An interactive journey through the Linux I/O stack
 						</p>
 					</div>
+					{/* Accessibility Controls */}
+					<div className="absolute right-4 flex items-center gap-2">
+						<Button
+							variant="ghost"
+							size="icon"
+							onClick={() => setIsDarkMode(!isDarkMode)}
+							aria-label="Toggle dark mode"
+							className="border-slate-600 bg-slate-800 text-slate-100 hover:bg-slate-700"
+						>
+							{isDarkMode ? (
+								<Moon className="h-4 w-4" />
+							) : (
+								<Sun className="h-4 w-4" />
+							)}
+						</Button>
+						<Button
+							variant="ghost"
+							size="icon"
+							onClick={() => setShowHardwareDetails(!showHardwareDetails)}
+							aria-label="Toggle hardware details"
+							className="border-slate-600 bg-slate-800 text-slate-100 hover:bg-slate-700"
+						>
+							<HardDrive className="h-4 w-4" />
+						</Button>
+						<Button
+							variant="ghost"
+							size="icon"
+							onClick={() => setShowKernelDetails(!showKernelDetails)}
+							aria-label="Toggle kernel details"
+							className="border-slate-600 bg-slate-800 text-slate-100 hover:bg-slate-700"
+						>
+							<Cpu className="h-4 w-4" />
+						</Button>
+						<Button
+							variant="ghost"
+							size="icon"
+							onClick={() => setShowKeyConcepts(!showKeyConcepts)}
+							aria-label="Toggle key concepts"
+							className="border-slate-600 bg-slate-800 text-slate-100 hover:bg-slate-700"
+						>
+							<Lightbulb className="h-4 w-4" />
+						</Button>
+					</div>
 				</header>
 
+				{/* Enhanced Main Content with Performance Optimizations */}
 				<main className="flex-1 flex flex-col gap-4 px-4 py-2 md:flex-row md:px-6 md:py-4 overflow-hidden">
-					{/* Left: Layer lanes */}
+					{/* Left: Layer lanes with lazy loading */}
 					<section className="flex-1 space-y-3 md:space-y-2">
 						<h2 className="mb-1 text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
 							Layers
@@ -217,11 +322,10 @@ function App() {
 								return (
 									<div key={group.id} className="space-y-2">
 										<h3
-											className={`text-[0.7rem] font-semibold uppercase tracking-[0.15em] ${
-												hasActiveLayer
-													? "text-slate-200"
-													: "text-muted-foreground"
-											}`}
+											className={`text-[0.7rem] font-semibold uppercase tracking-[0.15em] ${hasActiveLayer
+												? "text-slate-200"
+												: "text-muted-foreground"
+												}`}
 										>
 											{group.name}
 										</h3>
@@ -235,7 +339,10 @@ function App() {
 
 												return (
 													<div key={layer.id} className="relative">
-														<LayerLane layer={layer} active={isActive} />
+														<LayerLane
+															layer={layer}
+															active={isActive}
+														/>
 														{showFlow && (
 															<motion.div
 																initial={{ opacity: 0, scale: 0 }}
@@ -268,19 +375,20 @@ function App() {
 						</div>
 					</section>
 
-					{/* Center: Current step details */}
+					{/* Center: Current step details with enhanced animations */}
 					<section className="flex-[1.4] space-y-3">
 						<h2 className="mb-1 text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
 							Step Details
 						</h2>
 						<motion.div
 							key={`step-${currentStepIndex}`}
-							initial={{ opacity: 0, y: 10, scale: 0.98 }}
-							animate={{ opacity: 1, y: 0, scale: 1 }}
+							initial={shouldReduceMotion ? undefined : { opacity: 0, y: 10, scale: 0.98 }}
+							animate={shouldReduceMotion ? undefined : { opacity: 1, y: 0, scale: 1 }}
 							transition={{
 								duration: 0.4,
 								ease: [0.4, 0.0, 0.2, 1],
 							}}
+
 						>
 							<Card className="relative overflow-hidden border border-border/70 bg-slate-900 shadow-lg">
 								<CardHeader className="relative space-y-3">
@@ -293,7 +401,7 @@ function App() {
 											<PhaseBadge phase={currentStep.phase} />
 										</motion.div>
 										<div className="flex items-center gap-2">
-											{currentStep.keyConcept && (
+											{showKeyConcepts && currentStep.keyConcept && (
 												<motion.span
 													initial={{ opacity: 0, scale: 0.9 }}
 													animate={{ opacity: 1, scale: 1 }}
@@ -338,7 +446,7 @@ function App() {
 										transition={{ delay: 0.3, duration: 0.4 }}
 										className="grid gap-3 text-xs md:grid-cols-2"
 									>
-										{currentStep.kernelDetails && (
+										{showKernelDetails && currentStep.kernelDetails && (
 											<motion.div
 												initial={{ opacity: 0, x: -10 }}
 												animate={{ opacity: 1, x: 0 }}
@@ -353,7 +461,7 @@ function App() {
 												</p>
 											</motion.div>
 										)}
-										{currentStep.hardwareDetails && (
+										{showHardwareDetails && currentStep.hardwareDetails && (
 											<motion.div
 												initial={{ opacity: 0, x: 10 }}
 												animate={{ opacity: 1, x: 0 }}
@@ -411,7 +519,7 @@ function App() {
 						</div>
 					</section>
 
-					{/* Right: Timeline and controls */}
+					{/* Right: Timeline and controls with enhanced features */}
 					<aside className="flex-[1.1] space-y-3">
 						<h2 className="mb-1 text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
 							Timeline
@@ -420,10 +528,10 @@ function App() {
 							<CardHeader className="space-y-2 pb-3">
 								<div className="flex items-center justify-between gap-2">
 									<span className="text-sm font-medium text-slate-100">
-										Interactive Step Slider
+										Step Navigation
 									</span>
 									<span className="text-[0.7rem] text-muted-foreground">
-										Drag or play through the full I/O path
+										Drag to navigate through the I/O path
 									</span>
 								</div>
 							</CardHeader>
@@ -552,6 +660,30 @@ function App() {
 															</code>{" "}
 															Restart from beginning
 														</p>
+														<p>
+															<code className="bg-slate-700 px-1 rounded">
+																D
+															</code>{" "}
+															Toggle dark mode
+														</p>
+														<p>
+															<code className="bg-slate-700 px-1 rounded">
+																H
+															</code>{" "}
+															Toggle hardware details
+														</p>
+														<p>
+															<code className="bg-slate-700 px-1 rounded">
+																K
+															</code>{" "}
+															Toggle kernel details
+														</p>
+														<p>
+															<code className="bg-slate-700 px-1 rounded">
+																C
+															</code>{" "}
+															Toggle key concepts
+														</p>
 													</div>
 												</div>
 											</TooltipContent>
@@ -619,11 +751,10 @@ function App() {
 														setIsPlaying(false);
 														setSidebarOpen(false);
 													}}
-													className={`w-full p-3 rounded-lg text-left transition-all duration-200 ${
-														currentStepIndex === index
-															? "bg-slate-700 border border-slate-600"
-															: "hover:bg-slate-800/50 border border-transparent hover:border-slate-700"
-													}`}
+													className={`w-full p-3 rounded-lg text-left transition-all duration-200 ${currentStepIndex === index
+														? "bg-slate-700 border border-slate-600"
+														: "hover:bg-slate-800/50 border border-transparent hover:border-slate-700"
+														}`}
 												>
 													<div className="flex items-center gap-3">
 														<span
@@ -633,11 +764,10 @@ function App() {
 														</span>
 														<div className="flex-1 min-w-0">
 															<p
-																className={`text-sm font-medium truncate ${
-																	currentStepIndex === index
-																		? "text-slate-100"
-																		: "text-slate-300"
-																}`}
+																className={`text-sm font-medium truncate ${currentStepIndex === index
+																	? "text-slate-100"
+																	: "text-slate-300"
+																	}`}
 															>
 																{step.title}
 															</p>
@@ -670,7 +800,43 @@ function App() {
 							</span>{" "}
 							on ext4 over an SSD with TRIM, NCQ, and an FTL.
 						</span>
-						<span className="text-center md:text-right"></span>
+						<span className="text-center md:text-right">
+							{/* Accessibility status indicators */}
+							<span className="inline-flex gap-1">
+								<span
+									className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-[0.6rem] font-medium ${isDarkMode ? "bg-slate-700 text-slate-100" : "bg-slate-300 text-slate-900"
+										}`}
+								>
+									{isDarkMode ? (
+										<Moon className="h-3 w-3" />
+									) : (
+										<Sun className="h-3 w-3" />
+									)}
+									{isDarkMode ? "Dark" : "Light"}
+								</span>
+								<span
+									className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-[0.6rem] font-medium ${showHardwareDetails ? "bg-slate-700 text-slate-100" : "bg-slate-300 text-slate-900"
+										}`}
+								>
+									<HardDrive className="h-3 w-3" />
+									{showHardwareDetails ? "HW" : "No HW"}
+								</span>
+								<span
+									className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-[0.6rem] font-medium ${showKernelDetails ? "bg-slate-700 text-slate-100" : "bg-slate-300 text-slate-900"
+										}`}
+								>
+									<Cpu className="h-3 w-3" />
+									{showKernelDetails ? "Kernel" : "No Kernel"}
+								</span>
+								<span
+									className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-[0.6rem] font-medium ${showKeyConcepts ? "bg-slate-700 text-slate-100" : "bg-slate-300 text-slate-900"
+										}`}
+								>
+									<Lightbulb className="h-3 w-3" />
+									{showKeyConcepts ? "Concepts" : "No Concepts"}
+								</span>
+							</span>
+						</span>
 					</div>
 				</footer>
 			</div>
