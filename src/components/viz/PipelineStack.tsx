@@ -383,7 +383,7 @@ export const PipelineStack = memo(function PipelineStack({
 }: PipelineStackProps) {
 	const completionActive = activeLayers.has("completion");
 	return (
-		<div className="relative flex min-h-0 flex-1 flex-col gap-2">
+		<div className="relative flex min-h-[280px] min-w-0 flex-1 flex-col justify-start gap-2">
 			<div className="pointer-events-none absolute -right-1.5 bottom-0 top-0 w-px bg-slate-700/60" aria-hidden="true">
 				{completionActive &&
 					(reduceMotion ? (
@@ -406,10 +406,11 @@ export const PipelineStack = memo(function PipelineStack({
 				return (
 					<motion.div
 						key={lane.id}
+						layout={!reduceMotion}
 						initial={false}
 						animate={{ opacity: active ? 1 : 0.72 }}
 						transition={{ duration: 0.25 }}
-						className={`relative flex-1 rounded-xl border px-3 py-2.5 transition-colors duration-300 ${ring}`}
+						className={`relative rounded-xl border px-3 py-2.5 transition-colors duration-300 ${ring}`}
 					>
 						<div className="flex items-center justify-between gap-2">
 							<span className="text-[0.8rem] font-semibold text-slate-100">{lane.name}</span>
