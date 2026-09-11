@@ -12,7 +12,7 @@ The SSD writes completion queue entries and raises an MSI-X interrupt. The drive
 
 ## Kernel
 
-NVMe IRQ → `blk_mq_complete_request()` → `bio_endio()` → `end_page_writeback()` pending.
+NVMe IRQ → `blk_mq_complete_request()` → `bio_endio()` → `end_page_writeback()` per folio.
 
 ## Device
 

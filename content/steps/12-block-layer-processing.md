@@ -8,7 +8,7 @@ keyConcept: blk-mq
 simple: `submit_bio()` builds multi-page bios; blk-mq dispatches across hardware queues.
 ---
 
-Adjacent bios merge into larger segments. The mq-deadline or none scheduler orders them across blk-mq hardware contexts, tagged for NCQ depth (up to 32/128).
+Adjacent bios merge into larger segments. The mq-deadline or none scheduler orders them across blk-mq hardware contexts, each carrying an NVMe command ID with far more outstanding commands than SATA NCQ's 32.
 
 ## Kernel
 
@@ -16,4 +16,4 @@ Adjacent bios merge into larger segments. The mq-deadline or none scheduler orde
 
 ## Device
 
-No media write yet. Requests wait in submission queues with NCQ tags.
+No media write yet. Requests wait in submission queues with NVMe command IDs.

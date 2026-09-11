@@ -8,7 +8,7 @@ keyConcept: Directory entry
 simple: `ext4_add_entry()` inserts a dirent binding the filename to the inode number.
 ---
 
-The parent directory block (or htree index) gains a `ext4_dir_entry_2` record: inode number, rec_len, name_len, file_type, name. The record belongs to the same journal transaction as the inode.
+The parent directory block (or htree index) gains an `ext4_dir_entry_2` record: inode number, rec_len, name_len, file_type, name. The record belongs to the same journal transaction as the inode.
 
 ## Kernel
 

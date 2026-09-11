@@ -12,7 +12,7 @@ The address_space (`file->f_mapping`) provides folios for the file offset. `copy
 
 ## Kernel
 
-`__filemap_get_folio()` → `folio_alloc()` → `_copy_from_user()` → `set_page_dirty()`.
+`__filemap_get_folio()` → `filemap_alloc_folio()` → `_copy_from_user()` → `set_page_dirty()`.
 
 ## Device
 

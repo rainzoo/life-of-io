@@ -6,4 +6,4 @@ device: NVMe SSD
 version: 1
 ---
 
-Life of a single I/O on ext4 over an SSD with TRIM, NCQ, and an FTL.
+Life of a single I/O on ext4 over an SSD with TRIM, deep command queues, and an FTL.
