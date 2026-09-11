@@ -1,4 +1,4 @@
-import { memo, useState } from "react";
+import { memo, useEffect, useState } from "react";
 import type { PhaseId, VisualizationStep } from "@/content/schema";
 import { PHASE_BADGE_CLASS } from "@/content/theme";
 
@@ -23,6 +23,10 @@ export const PhaseRail = memo(function PhaseRail({
 	const current = steps[currentIndex];
 	const currentPhase = current ? current.phase : ORDER[0];
 	const [open, setOpen] = useState<PhaseId | null>(currentPhase);
+
+	useEffect(() => {
+		setOpen(currentPhase);
+	}, [currentPhase]);
 
 	return (
 		<nav aria-label="Phases" className="flex flex-col gap-1.5">
@@ -53,7 +57,7 @@ export const PhaseRail = memo(function PhaseRail({
 														: "bg-slate-800 text-slate-500"
 											}`}
 								>
-									{done ? "✓" : phaseIndex}
+									{done ? "✓" : phaseIndex + 1}
 								</span>
 								<span>{PHASE_LABEL[phase]}</span>
 							</span>
@@ -69,6 +73,7 @@ export const PhaseRail = memo(function PhaseRail({
 												<button
 													type="button"
 													onClick={() => onSelect(rendered)}
+													aria-current={active ? "step" : undefined}
 													className={`flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-[0.8rem] transition-colors ${
 													active
 													? "bg-slate-700/70 text-slate-100"

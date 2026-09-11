@@ -1,8 +1,25 @@
 import { motion } from "framer-motion";
 import { CircuitBoard, Cpu, HardDrive } from "lucide-react";
 import { memo, useState } from "react";
+import type { ReactNode } from "react";
 import type { VisualizationStep } from "@/content/schema";
 import { PhaseBadge } from "./PhaseBadge";
+
+export function renderInlineCode(text: string): ReactNode[] {
+	return text.split(/(`[^`]+`)/g).map((part, i) => {
+		if (part.startsWith("`") && part.endsWith("`") && part.length > 2) {
+			return (
+				<code
+					key={i}
+					className="rounded border border-slate-600/60 bg-slate-800/80 px-1 py-px font-mono text-[0.85em] text-cyan-200"
+				>
+					{part.slice(1, -1)}
+				</code>
+			);
+		}
+		return <span key={i}>{part}</span>;
+	});
+}
 
 interface StepInspectorProps {
 	step: VisualizationStep;
@@ -49,7 +66,7 @@ export const StepInspector = memo(function StepInspector({
 					</span>
 				</div>
 				<h2 className="f-title mt-2 text-slate-50">{step.title}</h2>
-				<p className="f-mono mt-1 text-slate-400">[{step.keyConcept}] {step.simple}</p>
+				<p className="f-mono mt-1 text-slate-400">[{step.keyConcept}] {renderInlineCode(step.simple)}</p>
 			</header>
 			{/* Tabs */}
 			<div
@@ -77,7 +94,7 @@ export const StepInspector = memo(function StepInspector({
 			</div>
 			{/* Scrollable body */}
 			<div className="flex-1 overflow-y-auto px-3 py-3">
-				<p className="f-body text-slate-200">{body}</p>
+				<p className="f-body text-slate-200">{renderInlineCode(body)}</p>
 				<div className="mt-3 flex flex-wrap gap-1.5">
 					{step.layers.map((id) => (
 						<span

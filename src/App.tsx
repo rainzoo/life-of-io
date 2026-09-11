@@ -4,7 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { ControlBar } from "@/components/viz/ControlBar";
 import { PhaseRail } from "@/components/viz/PhaseRail";
 import { DurabilityBadge, PipelineStack } from "@/components/viz/PipelineStack";
-import { StepInspector } from "@/components/viz/StepInspector";
+import { StepInspector, renderInlineCode } from "@/components/viz/StepInspector";
 import { META, STEPS } from "@/content/load";
 import { PHASE_LABELS } from "@/content/theme";
 
@@ -74,9 +74,10 @@ function App() {
 		<TooltipProvider>
 			<div className="flex min-h-screen flex-col bg-slate-950 text-foreground">
 				<header className="flex items-center justify-between gap-3 border-b border-border/60 px-4 py-2.5 md:px-6">
-					<div>
+					<div className="min-w-0">
 						<h1 className="f-title px-2 text-slate-50">Life of IO</h1>
 						<p className="f-mono text-slate-400">{META.command} · {META.filesystem} · {META.device}</p>
+						<p className="f-body mt-1 max-w-[72ch] text-slate-500">{META.intro}</p>
 					</div>
 					<DurabilityBadge order={currentStep.order} />
 				</header>
@@ -88,7 +89,7 @@ function App() {
 						<div className="rounded-xl border border-border/70 bg-slate-900/60 p-3.5">
 							<p className="f-eyebrow text-slate-500">{PHASE_LABELS[currentStep.phase]}</p>
 							<h2 className="f-title mt-1 text-slate-50">{currentStep.title}</h2>
-							<p className="f-body mt-2 text-slate-200">{currentStep.description}</p>
+							<p className="f-body mt-2 text-slate-200">{renderInlineCode(currentStep.description)}</p>
 						</div>
 						<PipelineStack activeLayers={new Set(currentStep.layers)} order={currentStep.order} reduceMotion={shouldReduceMotion ?? false} />
 					</section>
