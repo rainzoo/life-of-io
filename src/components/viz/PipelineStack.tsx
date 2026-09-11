@@ -98,50 +98,158 @@ function activeState(
 	return { ring: "border-slate-500 bg-slate-800 shadow-md shadow-slate-900/50", chip: null, state: null };
 }
 
-// Resident-state strip for the active lane.
-function ResidentStrip({ state, slug }: { state: string | null; slug: string }) {
-	if (state === "dirty-folios") {
-		const dirty = DIRTY_SLUGS.has(slug);
-		const n = 6;
-		return (
-			<div className="flex items-center gap-1.5">
-				{Array.from({ length: n }, (_, i) => (
-					<span
+// Resident-state visuals for the active lane. Animated diagrams replace static
+// labels; every animation is skipped when reduceMotion is set.
+function FolioGrid({ slug, dirty, reduceMotion }: { slug: string; dirty: boolean; reduceMotion: boolean }) {
+	const n = 6;
+	return (
+		<div key={`${slug}-${dirty ? "dirty" : "clean"}`} className="flex items-center gap-1.5">
+			{Array.from({ length: n }, (_, i) => (
+				<motion.span
+					key={i}
+					initial={reduceMotion ? undefined : { opacity: 0, scale: 0.5 }}
+					animate={{ opacity: 1, scale: 1 }}
+					transition={{ duration: 0.2, delay: reduceMotion ? 0 : i * 0.06 }}
+					className={`h-3 w-2 rounded-sm ${dirty ? (i < 4 ? "bg-amber-500/80" : "bg-amber-400/40") : "bg-sky-500/70"}`}
+				/>
+			))}
+			<span className="shrink-0 text-[0.7rem] text-slate-400">{dirty ? "dirty folios" : "writeback → clean"}</span>
+		</div>
+	);
+}
+
+function BioMerge({ reduceMotion }: { reduceMotion: boolean }) {
+	return (
+		<div className="flex items-center gap-1.5">
+			<div className="flex items-center gap-0.5">
+				{[0, 1, 2].map((i) => (
+					<motion.span
 						key={i}
-						className={`h-3 w-2 rounded-sm ${dirty ? (i < 4 ? "bg-amber-500/80" : "bg-amber-400/40") : "bg-sky-500/70"}`}
+						initial={reduceMotion ? undefined : { opacity: 0, x: -10 }}
+						animate={{ opacity: 1, x: 0 }}
+						transition={{ duration: 0.25, delay: reduceMotion ? 0 : i * 0.12 }}
+						className="h-3 w-4 rounded-sm border border-amber-400/60 bg-amber-500/40"
 					/>
 				))}
-				<span className="shrink-0 text-[0.7rem] text-slate-400">{dirty ? "dirty folios" : "writeback → clean"}</span>
 			</div>
-		);
+			<span className="font-mono text-[0.7rem] text-amber-300">→</span>
+			<motion.span
+				initial={reduceMotion ? undefined : { opacity: 0, scaleX: 0.5 }}
+				animate={{ opacity: 1, scaleX: 1 }}
+				transition={{ duration: 0.3, delay: reduceMotion ? 0 : 0.36 }}
+				className="h-3 w-12 rounded-sm bg-amber-400/70 shadow-[0_0_8px_rgba(251,191,36,0.5)]"
+			/>
+			<span className="shrink-0 text-[0.7rem] text-slate-400">3 bios → 1 segment</span>
+		</div>
+	);
+}
+
+function JournalStrip({ commit, reduceMotion }: { commit: boolean; reduceMotion: boolean }) {
+	const blocks = commit ? ["descriptor", "data", "COMMIT"] : ["descriptor", "data"];
+	return (
+		<div className="flex items-center gap-1.5">
+			{blocks.map((b, i) => {
+				const isCommit = b === "COMMIT";
+				return (
+					<motion.span
+						key={`${b}-${commit ? "c" : "t"}`}
+						initial={reduceMotion ? undefined : { opacity: 0, y: 6 }}
+						animate={{ opacity: 1, y: 0 }}
+						transition={{ duration: 0.2, delay: reduceMotion ? 0 : i * 0.1 }}
+						className={`rounded border px-1.5 py-0.5 font-mono text-[0.65rem] ${isCommit
+							? "border-sky-300/70 bg-sky-400/20 text-sky-100"
+							: "border-yellow-300/60 bg-yellow-400/20 text-yellow-100"}`}
+					>
+						{b}
+					</motion.span>
+				);
+			})}
+			<span className="shrink-0 text-[0.7rem] text-slate-400">{commit ? "commit block written" : "running transaction"}</span>
+		</div>
+	);
+}
+
+function NandCells({ programming, reduceMotion }: { programming: boolean; reduceMotion: boolean }) {
+	return (
+		<div className="flex items-center gap-1.5">
+			{Array.from({ length: 8 }, (_, i) => {
+				const hot = programming && i === 4;
+				return hot ? (
+					<motion.span
+						key={i}
+						animate={reduceMotion ? undefined : { scale: [1, 1.3, 1], opacity: [1, 0.65, 1] }}
+						transition={reduceMotion ? undefined : { duration: 1.2, repeat: Infinity, ease: "easeInOut" }}
+						className="h-3 w-4 rounded-sm bg-orange-500/80 shadow-[0_0_6px_rgba(249,115,22,0.8)]"
+					/>
+				) : (
+					<span key={i} className="h-3 w-4 rounded-sm bg-slate-700" />
+				);
+			})}
+			<span className="shrink-0 text-[0.7rem] text-slate-400">{programming ? "programming page" : "NAND cells"}</span>
+		</div>
+	);
+}
+
+function L2PMap({ reduceMotion }: { reduceMotion: boolean }) {
+	const rows = [
+		{ lba: "0x12", pba: "0x7A", hot: false },
+		{ lba: "0x13", pba: "0xB4", hot: true },
+		{ lba: "0x14", pba: "0x7C", hot: false },
+	];
+	return (
+		<div className="flex items-center gap-2">
+			<div className="flex flex-col gap-0.5">
+				{rows.map((r) => (
+					<motion.div
+						key={r.lba}
+						initial={reduceMotion ? undefined : { opacity: 0, x: -6 }}
+						animate={{ opacity: r.hot ? 1 : 0.55, x: 0 }}
+						transition={{ duration: 0.25 }}
+						className="flex items-center gap-1 font-mono text-[0.65rem]"
+					>
+						<span className={`rounded border px-1 py-px ${r.hot ? "border-red-300/70 bg-red-400/20 text-red-100" : "border-slate-600/60 bg-slate-800/70 text-slate-400"}`}>
+							LBA {r.lba}
+						</span>
+						{r.hot ? (
+							<motion.span
+								animate={reduceMotion ? undefined : { x: [0, 3, 0] }}
+								transition={reduceMotion ? undefined : { duration: 0.9, repeat: Infinity }}
+								className="text-red-300"
+							>
+								→
+							</motion.span>
+						) : (
+							<span className="text-slate-600">→</span>
+						)}
+						<span className={`rounded border px-1 py-px ${r.hot ? "border-orange-300/70 bg-orange-400/20 text-orange-100" : "border-slate-600/60 bg-slate-800/70 text-slate-400"}`}>
+							PBA {r.pba}
+						</span>
+					</motion.div>
+				))}
+			</div>
+			<span className="shrink-0 text-[0.7rem] text-slate-400">L2P remap on write</span>
+		</div>
+	);
+}
+
+function ResidentStrip({ state, slug, reduceMotion }: { state: string | null; slug: string; reduceMotion: boolean }) {
+	if (state === "dirty-folios") {
+		if (slug === "block-layer-processing") return <BioMerge reduceMotion={reduceMotion} />;
+		return <FolioGrid slug={slug} dirty={DIRTY_SLUGS.has(slug)} reduceMotion={reduceMotion} />;
 	}
 	if (state === "journal-tx" || state === "journal-commit") {
-		const commit = state === "journal-commit";
-		return (
-			<div className="flex items-center gap-1.5">
-				<span className="rounded border border-yellow-300/60 bg-yellow-400/20 px-1.5 py-0.5 font-mono text-[0.65rem] text-yellow-100">descriptor</span>
-				<span className="rounded border border-yellow-300/60 bg-yellow-400/20 px-1.5 py-0.5 font-mono text-[0.65rem] text-yellow-100">data</span>
-				{commit && (
-					<span className="rounded border border-sky-300/70 bg-sky-400/20 px-1.5 py-0.5 font-mono text-[0.65rem] text-sky-100">COMMIT</span>
-				)}
-				<span className="shrink-0 text-[0.7rem] text-slate-400">{commit ? "commit block written" : "running transaction"}</span>
-			</div>
-		);
+		return <JournalStrip commit={state === "journal-commit"} reduceMotion={reduceMotion} />;
 	}
 	if (state === "nand") {
-		return (
-			<div className="flex items-center gap-1.5">
-				{Array.from({ length: 8 }, (_, i) => (
-					<span
-						key={i}
-						className={`h-3 w-4 rounded-sm ${i === 4
-							? "bg-orange-500/80 shadow-[0_0_6px_rgba(249,115,22,0.8)]"
-							: "bg-slate-700"}`}
-					/>
-				))}
-				<span className="shrink-0 text-[0.7rem] text-slate-400">{slug === "ssd-processing" ? "programming page" : "NAND cells"}</span>
-			</div>
-		);
+		if (slug === "ssd-processing") {
+			return (
+				<div className="flex flex-col gap-1.5">
+					<L2PMap reduceMotion={reduceMotion} />
+					<NandCells programming reduceMotion={reduceMotion} />
+				</div>
+			);
+		}
+		return <NandCells programming={false} reduceMotion={reduceMotion} />;
 	}
 	return null;
 }
@@ -169,7 +277,7 @@ export const PipelineStack = memo(function PipelineStack({
 				const active = lane.layerIds.some((id) => activeLayers.has(id));
 				const st = activeState(lane.id, active, slug);
 				const ring = active ? st.ring : "border-slate-700/60 bg-slate-900/40";
-				const strip = active ? ResidentStrip({ state: st.state, slug }) : null;
+				const strip = active ? ResidentStrip({ state: st.state, slug, reduceMotion }) : null;
 				return (
 					<motion.div
 						key={lane.id}
