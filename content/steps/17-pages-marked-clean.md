@@ -6,6 +6,7 @@ title: Pages Marked Clean
 layers: [page-cache, completion]
 keyConcept: Clean folio
 simple: `end_page_writeback()` clears the writeback flag after successful media write; dirty cleared at writeback start.
+latency_ns: 500
 ---
 
 Folio flags transition from writeback to clean and up-to-date; the dirty flag cleared when writeback began. Clean folios remain cached for reads and become reclaim candidates under memory pressure.

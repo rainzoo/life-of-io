@@ -6,6 +6,7 @@ title: Writeback Begins
 layers: [page-cache, block, nvme]
 keyConcept: Writeback
 simple: `ext4_writepages()` converts dirty folios to block I/O (bio) buffers; data precedes metadata commit in data=ordered.
+latency_ns: 10000
 ---
 
 Writeback scans the address_space for dirty folios, locks them, and maps each range through allocated blocks. Each range becomes a `bio` with `REQ_OP_WRITE`.

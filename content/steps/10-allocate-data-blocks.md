@@ -6,6 +6,7 @@ title: Allocate Data Blocks
 layers: [ext4, journal]
 keyConcept: Extent
 simple: `ext4_da_write_begin()` records a delayed extent; physical blocks are chosen at writeback.
+latency_ns: 1000
 ---
 
 `ext4_insert_delayed_block()` tracks the logical range in the extent status tree with no physical blocks; `i_size` grows in memory. Physical allocation and `i_blocks` wait for writeback.

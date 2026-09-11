@@ -6,6 +6,7 @@ title: Journal Transaction
 layers: [ext4, journal, block, nvme, ssd-ftl, nand]
 keyConcept: JBD2
 simple: `jbd2_journal_start()` batches inode and dirent buffers; commit writes descriptor, metadata, and commit blocks.
+latency_ns: 50000
 ---
 
 In `data=ordered` mode, metadata buffers join the running Journaling Block Device 2 (JBD2) transaction. `jbd2_journal_commit_transaction()` writes the transaction as sequential journal blocks: descriptor, metadata, commit.

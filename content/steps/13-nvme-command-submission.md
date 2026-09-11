@@ -6,6 +6,7 @@ title: NVMe Command Submission
 layers: [nvme]
 keyConcept: Submission queue
 simple: `nvme_queue_rq()` posts WRITE commands and rings the doorbell register.
+latency_ns: 5000
 ---
 
 Each block I/O (bio) maps to Non-Volatile Memory Express (NVMe) WRITE commands with namespace, Logical Block Address (LBA), and Physical Region Page (PRP)/Scatter-Gather List (SGL) addresses. A doorbell write notifies the controller over Peripheral Component Interconnect Express (PCIe).

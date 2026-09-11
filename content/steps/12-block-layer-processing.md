@@ -6,6 +6,7 @@ title: Block Layer Processing
 layers: [block, nvme]
 keyConcept: blk-mq
 simple: `submit_bio()` builds multi-page block I/O (bio) buffers; block multi-queue (blk-mq) dispatches across hardware queues.
+latency_ns: 5000
 ---
 
 Adjacent block I/O (bio) buffers merge into larger segments. The mq-deadline or none scheduler orders them across blk-mq hardware contexts, each carrying a Non-Volatile Memory Express (NVMe) command ID with far deeper queues than Serial ATA (SATA) Native Command Queuing (NCQ)'s 32.

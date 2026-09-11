@@ -6,6 +6,7 @@ title: Path Resolution
 layers: [syscall-vfs]
 keyConcept: dentry
 simple: `link_path_walk()` resolves the parent directory entry (dentry) and returns a negative dentry for the new name.
+latency_ns: 1000
 ---
 
 `link_path_walk()` traverses the directory entry (dentry) cache component by component. Permission checks run via `inode_permission()` at each level. The final lookup yields a negative dentry in the parent.

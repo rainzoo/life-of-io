@@ -6,6 +6,7 @@ title: File Created
 layers: [syscall-vfs, ext4]
 keyConcept: File descriptor
 simple: `dentry_open()` instantiates the struct file; `get_unused_fd_flags()` returns the file descriptor (fd).
+latency_ns: 1000
 ---
 
 Virtual File System (VFS) instantiates the directory entry (dentry)/index node (inode) pair and allocates the lowest free file descriptor (fd). `open()` returns the fd; `ls` resolves the new directory entry (dirent).

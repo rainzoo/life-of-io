@@ -6,6 +6,7 @@ title: fsync Durability
 layers: [syscall-vfs, ext4, journal, block, nvme, ssd-ftl, nand, completion]
 keyConcept: fsync
 simple: `ext4_sync_file()` forces writeback, journal commit, and cache flush before return.
+latency_ns: 200000
 ---
 
 `fsync()` blocks until data pages, metadata transaction, and device volatile caches reach stable storage. Return value zero means power-loss safe.

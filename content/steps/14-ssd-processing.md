@@ -6,6 +6,7 @@ title: SSD Processing
 layers: [ssd-ftl, nand]
 keyConcept: FTL
 simple: The Flash Translation Layer (FTL) maps Logical Block Addresses (LBAs) to physical pages, applies Error Correction Code (ECC), and schedules NAND program operations.
+latency_ns: 20000
 ---
 
 The controller translates each LBA through the logical-to-physical (L2P) table, selects a program target with wear leveling, encodes Error Correction Code (ECC), and buffers the page for NAND programming.
