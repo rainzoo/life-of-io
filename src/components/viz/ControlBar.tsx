@@ -55,8 +55,10 @@ export const ControlBar = memo(function ControlBar({
 					<span className="w-8 text-center font-mono text-[0.7rem] text-slate-200">{speed.toFixed(1)}x</span>
 				</div>
 			</div>
-			<TraceScrubber steps={steps} index={index} onChange={onScrub} />
-			<span className="shrink-0 hidden text-[0.7rem] text-slate-400 lg:inline" title="←/→ navigate · Space next · Enter play/pause · R restart">←/→ navigate · Space next · Enter play · R restart</span>
+			<div className="min-w-0 flex-1">
+				<TraceScrubber steps={steps} index={index} onChange={onScrub} />
+			</div>
+			<span className="shrink-0 hidden whitespace-nowrap text-[0.7rem] text-slate-400 lg:inline" title="←/→ navigate · Space next · Enter play/pause · R restart">Built with ❤️ by Manas · ←/→ navigate · Space next · Enter play · R restart</span>
 		</footer>
 	);
 });

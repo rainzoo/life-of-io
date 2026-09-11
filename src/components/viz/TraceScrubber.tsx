@@ -54,19 +54,22 @@ export const TraceScrubber = memo(function TraceScrubber({
 								title={`${marker.label} — ${s.title}`}
 								aria-label={`Jump to ${marker.label}: ${s.title}`}
 								onClick={() => onChange(i)}
-								className={`pointer-events-auto h-1.5 w-1.5 rounded-full transition-transform focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-300 ${marker.cls} ${
-									i === index ? "scale-150" : "opacity-70 hover:opacity-100 hover:scale-125"
+								className={`pointer-events-auto h-1.5 w-1.5 shrink-0 rounded-full transition-opacity focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-300 ${marker.cls} ${
+									i === index ? "opacity-100 ring-1 ring-white/80" : "opacity-70 hover:opacity-100"
 								}`}
 							/>
 						);
 					})}
 				</div>
 			</div>
-			<div className="flex items-center justify-between font-mono text-[0.65rem] text-slate-500">
-				<span>
-					{steps[index].label} · {steps[index].slug}
+			<div className="flex min-h-[1rem] items-center justify-between gap-3 font-mono text-[0.65rem] text-slate-400">
+				<span className="flex min-w-0 flex-1 items-baseline gap-1.5">
+					<span className="shrink-0 tabular-nums text-slate-300">
+						{steps[index].label} · {index + 1}/{steps.length}
+					</span>
+					<span className="truncate text-slate-500">{steps[index].slug}</span>
 				</span>
-				<span className="hidden gap-2 md:flex" aria-label="Timeline markers legend">
+				<span className="hidden shrink-0 gap-2 whitespace-nowrap md:flex" aria-label="Timeline markers legend">
 					{LEGEND.map((entry) => (
 						<span key={entry.label} className="inline-flex items-center gap-1">
 							<span className={`h-1.5 w-1.5 rounded-full ${entry.cls}`} aria-hidden="true" /> {entry.label}
