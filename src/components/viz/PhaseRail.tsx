@@ -1,57 +1,93 @@
-import { memo } from "react";
-import type { PhaseId } from "@/content/schema";
-import { PHASE_BADGE_CLASS, PHASE_LABELS } from "@/content/theme";
+import { memo, useState } from "react";
+import type { PhaseId, VisualizationStep } from "@/content/schema";
+import { PHASE_BADGE_CLASS } from "@/content/theme";
 
 const ORDER: PhaseId[] = ["bash", "creation", "write"];
+const PHASE_LABEL: Record<PhaseId, string> = {
+	bash: "Command",
+	creation: "File Creation",
+	write: "Write + Persist",
+};
 
 interface PhaseRailProps {
-	phase: PhaseId;
-	onSelect: (phase: PhaseId) => void;
+	steps: VisualizationStep[];
+	currentIndex: number;
+	onSelect: (index: number) => void;
 }
 
 export const PhaseRail = memo(function PhaseRail({
-	phase,
+	steps,
+	currentIndex,
 	onSelect,
 }: PhaseRailProps) {
-	const current = ORDER.indexOf(phase);
+	const current = steps[currentIndex];
+	const currentPhase = current ? current.phase : ORDER[0];
+	const [open, setOpen] = useState<PhaseId | null>(currentPhase);
+
 	return (
-		<ol className="flex gap-1.5 md:flex-col md:gap-2">
-			{ORDER.map((p, i) => {
-				const done = i < current;
-				const now = i === current;
+		<nav aria-label="Phases" className="flex flex-col gap-1.5">
+			{ORDER.map((phase, phaseIndex) => {
+				const phaseSteps = steps.filter((s) => s.phase === phase);
+				const phaseCurrent = phase === currentPhase;
+				const expanded = open === phase;
+				const done = ORDER.indexOf(currentPhase) > phaseIndex;
 				return (
-					<li key={p}>
+					<div key={phase} className="rounded-lg border border-slate-700/50 bg-slate-900/40">
 						<button
 							type="button"
-							onClick={() => onSelect(p)}
-							aria-current={now ? "step" : undefined}
-							className={`flex items-center gap-2 rounded-lg border px-2.5 py-1.5 text-left transition-colors duration-200 ${
-								now
-									? PHASE_BADGE_CLASS[p]
-									: "border-slate-700/60 bg-slate-900/40 text-slate-400 hover:border-slate-600 hover:text-slate-200"
-							}`}
-						>
-							<span
-								className={`flex h-5 w-5 items-center justify-center rounded-full font-mono text-[0.65rem] ${
-									done
-										? "bg-emerald-500/30 text-emerald-200"
-										: now
-											? "bg-current/20 font-bold"
-											: "bg-slate-800 text-slate-500"
+							onClick={() => setOpen(expanded ? null : phase)}
+							aria-expanded={expanded}
+							className={`flex w-full items-center justify-between gap-2 px-3 py-2 text-left text-[0.8rem] font-semibold transition-colors ${
+								phaseCurrent
+									? PHASE_BADGE_CLASS[phase]
+										: "text-slate-300 hover:bg-slate-800/50"
 								}`}
-							>
-								{done ? "✓" : i}
+						>
+							<span className="flex items-center gap-2">
+								<span
+										className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full font-mono text-[0.65rem] ${
+										done
+											? "bg-emerald-500/30 text-emerald-200"
+												: phaseCurrent
+														? "bg-current/20 font-bold"
+														: "bg-slate-800 text-slate-500"
+											}`}
+								>
+									{done ? "✓" : phaseIndex}
+								</span>
+								<span>{PHASE_LABEL[phase]}</span>
 							</span>
-							<span className="hidden text-[0.7rem] font-medium leading-tight lg:inline">
-								{PHASE_LABELS[p]}
-							</span>
-							<span className="font-mono text-[0.65rem] lg:hidden">
-								P{i}
-							</span>
+							<span className="font-mono text-[0.65rem] text-slate-500">{phaseSteps.length}</span>
 						</button>
-					</li>
+						{expanded && (
+							<ul className="mt-1 flex flex-col gap-0.5">
+								{phaseSteps.map((s) => {
+										const rendered = steps.indexOf(s);
+										const active = rendered === currentIndex;
+										return (
+											<li key={s.slug}>
+												<button
+													type="button"
+													onClick={() => onSelect(rendered)}
+													className={`flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-[0.8rem] transition-colors ${
+													active
+													? "bg-slate-700/70 text-slate-100"
+													: "text-slate-400 hover:bg-slate-800/60 hover:text-slate-300"
+												}`}
+											>
+												<span className="w-5 shrink-0 font-mono text-[0.65rem] text-slate-500">
+												{s.label}
+												</span>
+												<span className="min-w-0 flex-1 truncate">{s.title}</span>
+											</button>
+										</li>
+									);
+								})}
+							</ul>
+						)}
+					</div>
 				);
 			})}
-		</ol>
+		</nav>
 	);
 });

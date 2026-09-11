@@ -132,4 +132,31 @@
 	.glow-cyan {
 		box-shadow: 0 0 20px hsl(var(--accent-cyan) / 0.3);
 	}
+
+	/* Typographic scale — clean, readable hierarchy.
+	   Faces: Inter (UI/text) + JetBrains Mono (mechanism), both preloaded.
+	   Color is applied per-use via Tailwind slate classes, not here. */
+	.f-eyebrow {
+		font-size: 0.6875rem; /* 11px */
+		font-weight: 600;
+		letter-spacing: 0.18em;
+		text-transform: uppercase;
+	}
+	.f-section {
+		font-size: 0.875rem; /* 14px */
+		font-weight: 600;
+	}
+	.f-title {
+		font-size: 1.5rem; /* 24px */
+		font-weight: 600;
+		letter-spacing: -0.01em;
+	}
+	.f-body {
+		font-size: 0.9375rem; /* 15px */
+		line-height: 1.6;
+	}
+	.f-mono {
+		font-family: "JetBrains Mono", ui-monospace, monospace;
+		font-size: 0.8125rem; /* 13px */
+	}
 }

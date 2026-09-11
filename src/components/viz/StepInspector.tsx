@@ -1,7 +1,6 @@
 import { motion } from "framer-motion";
-import { Cpu, HardDrive } from "lucide-react";
+import { CircuitBoard, Cpu, HardDrive } from "lucide-react";
 import { memo, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { VisualizationStep } from "@/content/schema";
 import { PhaseBadge } from "./PhaseBadge";
 
@@ -12,7 +11,13 @@ interface StepInspectorProps {
 	reduceMotion: boolean;
 }
 
-type Tab = "kernel" | "device";
+type Tab = "story" | "kernel" | "device";
+
+const TABS: { id: Tab; label: string; Icon: typeof Cpu }[] = [
+	{ id: "story", label: "Story", Icon: HardDrive },
+	{ id: "kernel", label: "Kernel", Icon: Cpu },
+	{ id: "device", label: "Device", Icon: CircuitBoard },
+];
 
 export const StepInspector = memo(function StepInspector({
 	step,
@@ -20,72 +25,70 @@ export const StepInspector = memo(function StepInspector({
 	total,
 	reduceMotion,
 }: StepInspectorProps) {
-	const [tab, setTab] = useState<Tab>("kernel");
-	const body = tab === "kernel" ? step.kernel : step.device;
+	const [tab, setTab] = useState<Tab>("story");
+	const body =
+		tab === "story"
+			? step.description
+			: tab === "kernel"
+				? step.kernel
+				: step.device;
 	return (
 		<motion.div
 			key={step.slug}
 			initial={reduceMotion ? undefined : { opacity: 0, y: 10 }}
 			animate={{ opacity: 1, y: 0 }}
-			transition={{ duration: 0.3 }}
+			transition={{ duration: 0.25 }}
+			className="flex h-full flex-col rounded-xl border border-border/70 bg-slate-900 shadow-lg"
 		>
-			<Card className="relative overflow-hidden border border-border/70 bg-slate-900 shadow-lg">
-				<CardHeader className="relative space-y-3">
-					<div className="flex flex-wrap items-center justify-between gap-2">
-						<PhaseBadge phase={step.phase} />
-						<span className="rounded-full border border-border/60 bg-slate-900/80 px-3 py-1 font-mono text-[0.7rem] text-muted-foreground">
-							{step.label} · {index + 1}/{total}
-						</span>
-					</div>
-					<CardTitle className="text-lg font-bold text-slate-50 md:text-xl">
-						{step.title}
-					</CardTitle>
-					<p className="font-mono text-[0.7rem] text-slate-400">
-						[{step.keyConcept}] {step.simple}
-					</p>
-				</CardHeader>
-				<CardContent className="relative space-y-4 pb-6">
-					<p className="text-sm leading-relaxed text-slate-200">
-						{step.description}
-					</p>
-					<div
-						role="tablist"
-						aria-label="Mechanism"
-						className="flex gap-1 rounded-lg border border-slate-700/80 bg-slate-950/80 p-1"
+			{/* Sticky header */}
+			<header className="border-b border-slate-700/60 px-4 py-3">
+				<div className="flex items-center justify-between gap-2">
+					<PhaseBadge phase={step.phase} />
+					<span className="rounded-full border border-border/60 bg-slate-900/80 px-2.5 py-0.5 font-mono text-[0.7rem] text-slate-400">
+						{step.label} · {index + 1}/{total}
+					</span>
+				</div>
+				<h2 className="f-title mt-2 text-slate-50">{step.title}</h2>
+				<p className="f-mono mt-1 text-slate-400">[{step.keyConcept}] {step.simple}</p>
+			</header>
+			{/* Tabs */}
+			<div
+				role="tablist"
+				aria-label="Mechanism"
+				className="mx-2 flex gap-1 rounded-lg border border-slate-700/70 bg-slate-950/70 p-1"
+			>
+				{TABS.map(({ id, label, Icon }) => (
+					<button
+						key={id}
+						role="tab"
+						aria-selected={tab === id}
+						type="button"
+						onClick={() => setTab(id)}
+						className={`flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-1.5 text-[0.75rem] font-medium transition-colors ${
+							tab === id
+								? "bg-slate-700 text-slate-100"
+								: "text-slate-400 hover:text-slate-200"
+						}`}
 					>
-						{(
-							[
-								{ id: "kernel", label: "Kernel", Icon: Cpu },
-								{ id: "device", label: "Device", Icon: HardDrive },
-							] as const
-						).map(({ id, label, Icon }) => (
-							<button
-								key={id}
-								role="tab"
-								aria-selected={tab === id}
-								type="button"
-								onClick={() => setTab(id)}
-								className={`flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-1.5 text-[0.7rem] font-medium transition-colors ${
-									tab === id
-										? "bg-slate-700 text-slate-100"
-										: "text-slate-400 hover:text-slate-200"
-								}`}
-							>
-								<Icon className="h-3 w-3" />
-								{label}
-							</button>
-						))}
-					</div>
-					<div
-						role="tabpanel"
-						className="rounded-lg border border-slate-700/80 bg-slate-950/80 p-3"
-					>
-						<p className="whitespace-pre-wrap text-[0.78rem] leading-relaxed text-slate-200">
-							{body}
-						</p>
-					</div>
-				</CardContent>
-			</Card>
+						<Icon className="h-3.5 w-3.5" />
+						{label}
+					</button>
+				))}
+			</div>
+			{/* Scrollable body */}
+			<div className="flex-1 overflow-y-auto px-3 py-3">
+				<p className="f-body text-slate-200">{body}</p>
+				<div className="mt-3 flex flex-wrap gap-1.5">
+					{step.layers.map((id) => (
+						<span
+							key={id}
+							className="rounded-md border border-slate-600/70 bg-slate-900/80 px-2 py-0.5 font-mono text-[0.65rem] text-slate-300"
+						>
+						{id}
+					</span>
+					))}
+				</div>
+			</div>
 		</motion.div>
 	);
 });
