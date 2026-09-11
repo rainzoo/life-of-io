@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { CircuitBoard, Cpu, HardDrive } from "lucide-react";
+import { CircuitBoard, Cpu } from "lucide-react";
 import { memo, useState } from "react";
 import type { ReactNode } from "react";
 import type { VisualizationStep } from "@/content/schema";
@@ -28,10 +28,9 @@ interface StepInspectorProps {
 	reduceMotion: boolean;
 }
 
-type Tab = "story" | "kernel" | "device";
+type Tab = "kernel" | "device";
 
 const TABS: { id: Tab; label: string; Icon: typeof Cpu }[] = [
-	{ id: "story", label: "Story", Icon: HardDrive },
 	{ id: "kernel", label: "Kernel", Icon: Cpu },
 	{ id: "device", label: "Device", Icon: CircuitBoard },
 ];
@@ -42,13 +41,8 @@ export const StepInspector = memo(function StepInspector({
 	total,
 	reduceMotion,
 }: StepInspectorProps) {
-	const [tab, setTab] = useState<Tab>("story");
-	const body =
-		tab === "story"
-			? step.description
-			: tab === "kernel"
-				? step.kernel
-				: step.device;
+	const [tab, setTab] = useState<Tab>("kernel");
+	const body = tab === "kernel" ? step.kernel : step.device;
 	return (
 		<motion.div
 			key={step.slug}
@@ -65,8 +59,7 @@ export const StepInspector = memo(function StepInspector({
 						{step.label} · {index + 1}/{total}
 					</span>
 				</div>
-				<h2 className="f-title mt-2 text-slate-50">{step.title}</h2>
-				<p className="f-mono mt-1 text-slate-400">[{step.keyConcept}] {renderInlineCode(step.simple)}</p>
+				<p className="f-mono mt-2 text-slate-400">[{step.keyConcept}] {renderInlineCode(step.simple)}</p>
 			</header>
 			{/* Tabs */}
 			<div
@@ -94,7 +87,15 @@ export const StepInspector = memo(function StepInspector({
 			</div>
 			{/* Scrollable body */}
 			<div className="flex-1 overflow-y-auto px-3 py-3">
-				<p className="f-body text-slate-200">{renderInlineCode(body)}</p>
+				<motion.p
+					key={`${step.slug}-${tab}`}
+					initial={reduceMotion ? undefined : { opacity: 0, x: 8 }}
+					animate={{ opacity: 1, x: 0 }}
+					transition={{ duration: 0.2 }}
+					className="f-body text-slate-200"
+				>
+					{renderInlineCode(body)}
+				</motion.p>
 				<div className="mt-3 flex flex-wrap gap-1.5">
 					{step.layers.map((id) => (
 						<span
