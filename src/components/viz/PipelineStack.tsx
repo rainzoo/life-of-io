@@ -40,6 +40,7 @@ interface PipelineStackProps {
 }
 
 const JOURNAL_COMMIT_SLUGS = new Set(["journal-transaction", "metadata-commit"]);
+const JOURNAL_TRANSIT_SLUGS = new Set(["journal-transaction", "metadata-commit", "fsync-durability"]);
 const DIRTY_SLUGS = new Set([
 	"copy-to-page-cache",
 	"allocate-data-blocks",
@@ -51,18 +52,23 @@ const DIRTY_SLUGS = new Set([
 
 function activeState(
 	laneId: string,
-	isActive: boolean,
+	activeLayers: Set<LayerId>,
 	slug: string,
 ): { ring: string; chip: string | null; state: string | null } {
+	const lane = PIPELINE_LANES.find((l) => l.id === laneId);
+	const isActive = lane ? lane.layerIds.some((id) => activeLayers.has(id)) : false;
 	if (!isActive) {
 		return { ring: "border-slate-500 bg-slate-800 shadow-md shadow-slate-900/50", chip: null, state: null };
 	}
 	if (laneId === "transport") {
-		return {
-			ring: "border-amber-400/70 bg-slate-900 shadow-[0_0_28px_rgba(251,191,36,0.18)]",
-			chip: DIRTY_SLUGS.has(slug) ? "dirty" : "writeback",
-			state: "dirty-folios",
-		};
+		const ring = "border-amber-400/70 bg-slate-900 shadow-[0_0_28px_rgba(251,191,36,0.18)]";
+		if (slug === "block-layer-processing") return { ring, chip: "merge", state: "bio-merge" };
+		// Folio state only when folios are actually involved; journal/discard
+		// traffic passing through blk-mq/NVMe gets a transit visual instead.
+		if (activeLayers.has("page-cache") || slug === "io-completion") {
+			return { ring, chip: DIRTY_SLUGS.has(slug) ? "dirty" : "writeback", state: "dirty-folios" };
+		}
+		return { ring, chip: "in transit", state: "transit" };
 	}
 	if (laneId === "filesystem") {
 		const journal = JOURNAL_COMMIT_SLUGS.has(slug);
@@ -85,14 +91,14 @@ function activeState(
 		return {
 			ring: "border-emerald-400/60 bg-slate-900 shadow-[0_0_28px_rgba(52,211,153,0.15)]",
 			chip: null,
-			state: null,
+			state: "terminal",
 		};
 	}
 	if (laneId === "dispatch") {
 		return {
 			ring: "border-cyan-400/60 bg-slate-900 shadow-[0_0_28px_rgba(34,211,238,0.15)]",
 			chip: null,
-			state: null,
+			state: "pathwalk",
 		};
 	}
 	return { ring: "border-slate-500 bg-slate-800 shadow-md shadow-slate-900/50", chip: null, state: null };
@@ -232,9 +238,124 @@ function L2PMap({ reduceMotion }: { reduceMotion: boolean }) {
 	);
 }
 
+function TransitStrip({ slug, reduceMotion }: { slug: string; reduceMotion: boolean }) {	const label =
+		slug === "trim-deleted-blocks"
+			? "discard in transit"
+			: JOURNAL_TRANSIT_SLUGS.has(slug)
+				? "journal in transit"
+				: "write in transit";
+	return (
+		<div className="flex items-center gap-1.5">
+			<div className="flex items-center gap-1" aria-hidden="true">
+				{[0, 1, 2].map((i) => (
+					<motion.span
+						key={i}
+						animate={reduceMotion ? undefined : { x: [0, 10, 0], opacity: [0.4, 1, 0.4] }}
+						transition={reduceMotion ? undefined : { duration: 1.2, repeat: Infinity, delay: i * 0.2 }}
+						className="h-1.5 w-1.5 rounded-full bg-cyan-300/80"
+					/>
+				))}
+			</div>
+			<span className="shrink-0 text-[0.7rem] text-slate-400">{label}</span>
+		</div>
+	);
+}
+
+const TERMINAL_CAPTION: Record<string, string> = {
+	"command-execution": "argv + O_CREAT redirection",
+	"open-file-request": "openat → do_sys_open",
+	"write-request": "write(fd, buf, count)",
+};
+
+function TerminalStrip({ slug, reduceMotion }: { slug: string; reduceMotion: boolean }) {
+	const tokens = ["echo", '"Hello"', ">", "file.txt"];
+	return (
+		<div key={slug} className="flex flex-col gap-1.5">
+			<div className="flex flex-wrap items-center gap-1 font-mono text-[0.65rem]">
+				<span className="text-emerald-300">$</span>
+				{tokens.map((t, i) => (
+					<motion.span
+						key={`${t}-${i}`}
+						initial={reduceMotion ? undefined : { opacity: 0, x: -6 }}
+						animate={{ opacity: 1, x: 0 }}
+						transition={{ duration: 0.2, delay: reduceMotion ? 0 : i * 0.12 }}
+						className={
+							i === 2
+								? "text-amber-300"
+								: "rounded border border-slate-600/60 bg-slate-800/70 px-1 py-px text-slate-200"
+						}
+					>
+						{t}
+					</motion.span>
+				))}
+			</div>
+			<span className="shrink-0 text-[0.7rem] text-slate-400">{TERMINAL_CAPTION[slug] ?? "argv · fd"}</span>
+		</div>
+	);
+}
+
+const PATH_STAGE: Record<string, number> = {
+	"open-file-request": 0,
+	"path-resolution": 1,
+	"file-created": 2,
+	"write-request": 2,
+	"fsync-durability": 2,
+};
+
+const PATH_CAPTION: Record<string, string> = {
+	"open-file-request": "trap ring 3 → 0 · path_openat",
+	"path-resolution": "link_path_walk → negative dentry",
+	"file-created": "dentry + inode instantiated",
+	"write-request": "fd → write_iter dispatch",
+	"fsync-durability": "ext4_sync_file blocks",
+};
+
+function PathWalk({ slug, reduceMotion }: { slug: string; reduceMotion: boolean }) {
+	const nodes = ["/", "parent", "file.txt"];
+	const stage = PATH_STAGE[slug] ?? 1;
+	const negative = slug === "path-resolution";
+	return (
+		<div key={slug} className="flex flex-col gap-1.5">
+			<div className="flex flex-wrap items-center gap-1 font-mono text-[0.65rem]">
+				{nodes.map((n, i) => {
+					const done = i < stage;
+					const current = i === stage;
+					const lastNegative = negative && i === nodes.length - 1;
+					return (
+						<span key={n} className="flex items-center gap-1">
+							{i > 0 && <span className="text-slate-600">→</span>}
+							<motion.span
+								initial={reduceMotion ? undefined : { opacity: 0, y: 4 }}
+								animate={{ opacity: done ? 0.75 : 1, y: 0 }}
+								transition={{ duration: 0.2, delay: reduceMotion ? 0 : i * 0.12 }}
+								className={`rounded border px-1 py-px ${
+									lastNegative
+										? "border-dashed border-amber-300/70 bg-amber-400/10 text-amber-200"
+										: current
+											? "border-cyan-300/70 bg-cyan-400/15 text-cyan-100 shadow-[0_0_8px_rgba(34,211,238,0.35)]"
+											: done
+												? "border-emerald-400/50 bg-emerald-400/10 text-emerald-200"
+												: "border-slate-600/60 bg-slate-800/70 text-slate-500"
+								}`}
+							>
+								{n}
+								{lastNegative && " ∅"}
+							</motion.span>
+						</span>
+					);
+				})}
+			</div>
+			<span className="shrink-0 text-[0.7rem] text-slate-400">{PATH_CAPTION[slug] ?? "dentry walk"}</span>
+		</div>
+	);
+}
+
 function ResidentStrip({ state, slug, reduceMotion }: { state: string | null; slug: string; reduceMotion: boolean }) {
+	if (state === "terminal") return <TerminalStrip slug={slug} reduceMotion={reduceMotion} />;
+	if (state === "pathwalk") return <PathWalk slug={slug} reduceMotion={reduceMotion} />;
+	if (state === "bio-merge") return <BioMerge reduceMotion={reduceMotion} />;
+	if (state === "transit") return <TransitStrip slug={slug} reduceMotion={reduceMotion} />;
 	if (state === "dirty-folios") {
-		if (slug === "block-layer-processing") return <BioMerge reduceMotion={reduceMotion} />;
 		return <FolioGrid slug={slug} dirty={DIRTY_SLUGS.has(slug)} reduceMotion={reduceMotion} />;
 	}
 	if (state === "journal-tx" || state === "journal-commit") {
@@ -279,7 +400,7 @@ export const PipelineStack = memo(function PipelineStack({
 			</div>
 			{PIPELINE_LANES.map((lane) => {
 				const active = lane.layerIds.some((id) => activeLayers.has(id));
-				const st = activeState(lane.id, active, slug);
+				const st = activeState(lane.id, activeLayers, slug);
 				const ring = active ? st.ring : "border-slate-700/60 bg-slate-900/40";
 				const strip = active ? ResidentStrip({ state: st.state, slug, reduceMotion }) : null;
 				return (
