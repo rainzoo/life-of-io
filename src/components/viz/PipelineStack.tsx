@@ -35,22 +35,37 @@ export function DurabilityBadge({ order }: { order: number }) {
 interface PipelineStackProps {
 	activeLayers: Set<LayerId>;
 	order: number;
+	slug: string;
 	reduceMotion: boolean;
 }
 
+const JOURNAL_COMMIT_SLUGS = new Set(["journal-transaction", "metadata-commit"]);
+const DIRTY_SLUGS = new Set([
+	"copy-to-page-cache",
+	"allocate-data-blocks",
+	"writeback-begins",
+	"block-layer-processing",
+	"nvme-command-submission",
+	"ssd-processing",
+]);
+
 function activeState(
 	laneId: string,
-	order: number,
+	isActive: boolean,
+	slug: string,
 ): { ring: string; chip: string | null; state: string | null } {
-	if (laneId === "transport" && order >= 8 && order <= 16) {
+	if (!isActive) {
+		return { ring: "border-slate-500 bg-slate-800 shadow-md shadow-slate-900/50", chip: null, state: null };
+	}
+	if (laneId === "transport") {
 		return {
 			ring: "border-amber-400/70 bg-slate-900 shadow-[0_0_28px_rgba(251,191,36,0.18)]",
-			chip: order <= 14 ? "dirty" : "writeback",
+			chip: DIRTY_SLUGS.has(slug) ? "dirty" : "writeback",
 			state: "dirty-folios",
 		};
 	}
-	if (laneId === "filesystem" && order >= 3 && order <= 17) {
-		const journal = order === 5 || order === 17;
+	if (laneId === "filesystem") {
+		const journal = JOURNAL_COMMIT_SLUGS.has(slug);
 		return {
 			ring: journal
 				? "border-yellow-300/80 bg-slate-900 shadow-[0_0_28px_rgba(250,204,21,0.22)]"
@@ -59,20 +74,34 @@ function activeState(
 			state: journal ? "journal-commit" : "journal-tx",
 		};
 	}
-	if (laneId === "media" && order >= 13) {
+	if (laneId === "media") {
 		return {
 			ring: "border-red-400/60 bg-slate-900 shadow-[0_0_28px_rgba(248,113,113,0.18)]",
-			chip: order === 14 ? "program" : null,
+			chip: slug === "ssd-processing" ? "program" : null,
 			state: "nand",
+		};
+	}
+	if (laneId === "process") {
+		return {
+			ring: "border-emerald-400/60 bg-slate-900 shadow-[0_0_28px_rgba(52,211,153,0.15)]",
+			chip: null,
+			state: null,
+		};
+	}
+	if (laneId === "dispatch") {
+		return {
+			ring: "border-cyan-400/60 bg-slate-900 shadow-[0_0_28px_rgba(34,211,238,0.15)]",
+			chip: null,
+			state: null,
 		};
 	}
 	return { ring: "border-slate-500 bg-slate-800 shadow-md shadow-slate-900/50", chip: null, state: null };
 }
 
 // Resident-state strip for the active lane.
-function ResidentStrip({ state, order }: { state: string | null; order: number }) {
+function ResidentStrip({ state, slug }: { state: string | null; slug: string }) {
 	if (state === "dirty-folios") {
-		const dirty = order <= 14;
+		const dirty = DIRTY_SLUGS.has(slug);
 		const n = 6;
 		return (
 			<div className="flex items-center gap-1.5">
@@ -110,7 +139,7 @@ function ResidentStrip({ state, order }: { state: string | null; order: number }
 							: "bg-slate-700"}`}
 					/>
 				))}
-				<span className="shrink-0 text-[0.7rem] text-slate-400">{order === 14 ? "programming page" : "NAND cells"}</span>
+				<span className="shrink-0 text-[0.7rem] text-slate-400">{slug === "ssd-processing" ? "programming page" : "NAND cells"}</span>
 			</div>
 		);
 	}
@@ -120,6 +149,7 @@ function ResidentStrip({ state, order }: { state: string | null; order: number }
 export const PipelineStack = memo(function PipelineStack({
 	activeLayers,
 	order,
+	slug,
 	reduceMotion,
 }: PipelineStackProps) {
 	const completionActive = activeLayers.has("completion");
@@ -137,9 +167,9 @@ export const PipelineStack = memo(function PipelineStack({
 			</div>
 			{PIPELINE_LANES.map((lane) => {
 				const active = lane.layerIds.some((id) => activeLayers.has(id));
-				const st = activeState(lane.id, order);
+				const st = activeState(lane.id, active, slug);
 				const ring = active ? st.ring : "border-slate-700/60 bg-slate-900/40";
-				const strip = active ? ResidentStrip({ state: st.state, order }) : null;
+				const strip = active ? ResidentStrip({ state: st.state, slug }) : null;
 				return (
 					<motion.div
 						key={lane.id}

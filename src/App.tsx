@@ -62,6 +62,14 @@ function App() {
 	}, [currentStepIndex, handleNext, isPlaying, maxIndex, speed]);
 
 	useEffect(() => {
+		const onVisibility = () => {
+			if (document.hidden) setIsPlaying(false);
+		};
+		document.addEventListener("visibilitychange", onVisibility);
+		return () => document.removeEventListener("visibilitychange", onVisibility);
+	}, []);
+
+	useEffect(() => {
 		if (typeof window === "undefined") return;
 		const params = new URLSearchParams(window.location.search);
 		params.set("step", String(currentStepIndex));
@@ -87,11 +95,11 @@ function App() {
 
 					<section aria-label="Pipeline" className="flex min-h-0 min-w-0 flex-col gap-3">
 						<div className="rounded-xl border border-border/70 bg-slate-900/60 p-3.5">
-							<p className="f-eyebrow text-slate-500">{PHASE_LABELS[currentStep.phase]}</p>
+							<p className="f-eyebrow text-slate-500">{PHASE_LABELS[currentStep.phase]} · Step {currentStep.label} of {STEPS.length}</p>
 							<h2 className="f-title mt-1 text-slate-50">{currentStep.title}</h2>
 							<p className="f-body mt-2 text-slate-200">{renderInlineCode(currentStep.description)}</p>
 						</div>
-						<PipelineStack activeLayers={new Set(currentStep.layers)} order={currentStep.order} reduceMotion={shouldReduceMotion ?? false} />
+						<PipelineStack activeLayers={new Set(currentStep.layers)} order={currentStep.order} slug={currentStep.slug} reduceMotion={shouldReduceMotion ?? false} />
 					</section>
 
 					<section aria-label="Step" className="min-w-0">
@@ -99,7 +107,7 @@ function App() {
 					</section>
 				</main>
 
-				<ControlBar steps={STEPS} index={currentStepIndex} maxIndex={maxIndex} isPlaying={isPlaying} speed={speed} onRestart={handleRestart} onPrev={handlePrev} onPlayPause={handlePlayPause} onNext={handleNext} onSpeed={handleSpeedChange} onScrub={handleScrub} filesystem={META.filesystem} />
+				<ControlBar steps={STEPS} index={currentStepIndex} maxIndex={maxIndex} isPlaying={isPlaying} speed={speed} onRestart={handleRestart} onPrev={handlePrev} onPlayPause={handlePlayPause} onNext={handleNext} onSpeed={handleSpeedChange} onScrub={handleScrub} />
 			</div>
 		</TooltipProvider>
 	);
