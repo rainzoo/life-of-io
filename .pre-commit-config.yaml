@@ -20,14 +20,14 @@ repos: # 1. General Hygiene & Security
 
   # 3. Spelling & Typos (Across all file types)
   - repo: https://github.com/codespell-project/codespell
-    rev: v2.4.2
+    rev: v2.4.3
     hooks:
       - id: codespell
         args: ["--skip=*.lock,package.json,package-lock.json"]
 
   # 4. GitHub Actions / Schema Validation
   - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.37.1
+    rev: 0.38.0
     hooks:
       - id: check-github-workflows
 
