@@ -8,11 +8,27 @@ import { join, basename } from "node:path";
 const root = new URL("..", import.meta.url).pathname;
 const contentDir = join(root, "content");
 const stepsDir = join(contentDir, "steps");
-const VALID_PHASES = ["bash", "creation", "write"];
+const VALID_PHASES = ["bash", "creation", "write", "read"];
 const VALID_LAYERS = [
 	"bash", "syscall-vfs", "ext4", "journal", "page-cache",
 	"block", "nvme", "ssd-ftl", "nand", "completion",
 ];
+
+// Scenario ids come from content/_scenarios.md (first column of each row).
+function scenarioIds() {
+	const ids = new Set();
+	const p = join(contentDir, "_scenarios.md");
+	if (!existsSync(p)) return ids;
+	for (const line of readFileSync(p, "utf8").split("\n")) {
+		const t = line.trim();
+		if (!t.startsWith("|")) continue;
+		const id = t.split("|").slice(1, -1).map((c) => c.trim())[0] ?? "";
+		if (!id || /^id$/i.test(id) || /^:?-+:?$/.test(id)) continue;
+		ids.add(id);
+	}
+	return ids;
+}
+const SCENARIOS = scenarioIds();
 
 function parseFrontmatter(raw) {
 	const match = raw.match(/^---\s*\n([\s\S]*?)\n---\s*\n?([\s\S]*)$/);
@@ -30,6 +46,8 @@ function parseFrontmatter(raw) {
 }
 
 const errors = [];
+if (!existsSync(join(contentDir, "_scenarios.md"))) errors.push("content/_scenarios.md missing");
+if (!SCENARIOS.has("write")) errors.push('scenarios must include "write"');
 if (!existsSync(stepsDir)) errors.push("content/steps/ missing");
 const files = existsSync(stepsDir)
 	? readdirSync(stepsDir).filter((f) => f.endsWith(".md")).sort()
@@ -56,12 +74,17 @@ for (const f of files) {
 	for (const l of layerList) {
 		if (!VALID_LAYERS.includes(l)) errors.push(`${f}: unknown layer "${l}"`);
 	}
+	const scenario = fm.scenario ?? "write";
+	if (!SCENARIOS.has(scenario)) errors.push(`${f}: unknown scenario "${scenario}"`);
+	const latency = Number(fm.latency_ns ?? fm.latencyNs ?? NaN);
+	if (!Number.isInteger(latency) || latency <= 0)
+		errors.push(`${f}: missing/invalid latency_ns (positive integer nanoseconds)`);
 	if (fm.slug) {
 		if (slugs.has(fm.slug)) errors.push(`${f}: duplicate slug "${fm.slug}"`);
 		slugs.add(fm.slug);
 	}
-	const lk = `${fm.phase}:${fm.label}`;
-	if (labels.has(lk)) errors.push(`${f}: duplicate label "${fm.label}"`);
+	const lk = `${scenario}:${fm.phase}:${fm.label}`;
+	if (labels.has(lk)) errors.push(`${f}: duplicate label "${fm.label}" in scenario "${scenario}"`);
 	labels.add(lk);
 	if (!body) errors.push(`${f}: empty body`);
 	if (!/^## Kernel$/mi.test(body)) errors.push(`${f}: missing "## Kernel" section`);

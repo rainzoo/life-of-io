@@ -2,11 +2,12 @@ import { memo, useEffect, useState } from "react";
 import type { PhaseId, VisualizationStep } from "@/content/schema";
 import { PHASE_BADGE_CLASS } from "@/content/theme";
 
-const ORDER: PhaseId[] = ["bash", "creation", "write"];
+const ORDER: PhaseId[] = ["bash", "creation", "write", "read"];
 const PHASE_LABEL: Record<PhaseId, string> = {
 	bash: "Command",
 	creation: "File Creation",
 	write: "Write + Persist",
+	read: "Read Path",
 };
 
 interface PhaseRailProps {
@@ -30,11 +31,11 @@ export const PhaseRail = memo(function PhaseRail({
 
 	return (
 		<nav aria-label="Phases" className="flex flex-col gap-1.5">
-			{ORDER.map((phase, phaseIndex) => {
+			{ORDER.filter((phase) => steps.some((s) => s.phase === phase)).map((phase) => {
 				const phaseSteps = steps.filter((s) => s.phase === phase);
 				const phaseCurrent = phase === currentPhase;
 				const expanded = open === phase;
-				const done = ORDER.indexOf(currentPhase) > phaseIndex;
+				const done = ORDER.indexOf(currentPhase) > ORDER.indexOf(phase);
 				return (
 					<div key={phase} className="rounded-lg border border-slate-700/50 bg-slate-900/40">
 						<button
@@ -57,7 +58,7 @@ export const PhaseRail = memo(function PhaseRail({
 														: "bg-slate-800 text-slate-500"
 											}`}
 								>
-									{done ? "✓" : phaseIndex + 1}
+									{done ? "✓" : ORDER.indexOf(phase) + 1}
 								</span>
 								<span>{PHASE_LABEL[phase]}</span>
 							</span>

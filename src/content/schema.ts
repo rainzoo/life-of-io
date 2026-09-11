@@ -1,7 +1,7 @@
 // Canonical content types. Pure data — no styling, icons, or Tailwind here.
 // Design mapping lives in `theme.ts`. Markdown in `content/` is the source of truth.
 
-export type PhaseId = "bash" | "creation" | "write";
+export type PhaseId = "bash" | "creation" | "write" | "read";
 
 export type LayerId =
 	| "bash"
@@ -21,6 +21,14 @@ export interface PhaseDefinition {
 	blurb: string;
 }
 
+export interface ScenarioDefinition {
+	id: string;
+	label: string;
+	command: string;
+	persistent: boolean;
+	blurb: string;
+}
+
 export interface LayerDefinition {
 	id: LayerId;
 	name: string;
@@ -30,9 +38,11 @@ export interface LayerDefinition {
 export interface VisualizationStep {
 	/** Stable id for deep links, derived from filename slug. */
 	slug: string;
-	/** Human-facing label, e.g. "1", "20". */
+	/** Human-facing label, e.g. "1", "20". Unique within a scenario. */
 	label: string;
-	/** Array position. */
+	/** Scenario this step belongs to (e.g. "write", "read"). */
+	scenario: string;
+	/** Array position within its scenario. */
 	order: number;
 	phase: PhaseId;
 	title: string;
@@ -47,6 +57,8 @@ export interface VisualizationStep {
 	/** `## Device` section. */
 	device: string;
 	layers: LayerId[];
+	/** Typical latency, nanoseconds, order-of-magnitude. */
+	latencyNs: number;
 }
 
 export interface ContentBundle {
@@ -59,6 +71,7 @@ export interface ContentBundle {
 		intro: string;
 	};
 	phases: PhaseDefinition[];
+	scenarios: ScenarioDefinition[];
 	layers: LayerDefinition[];
 	steps: VisualizationStep[];
 }

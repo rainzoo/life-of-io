@@ -7,6 +7,7 @@ import type {
 	LayerId,
 	PhaseDefinition,
 	PhaseId,
+	ScenarioDefinition,
 	VisualizationStep,
 } from "./schema";
 
@@ -25,12 +26,17 @@ const phasesModule = import.meta.glob(
 	{ eager: true, query: "?raw", import: "default" },
 ) as Record<string, string>;
 
+const scenariosModule = import.meta.glob(
+	"../../content/_scenarios.md",
+	{ eager: true, query: "?raw", import: "default" },
+) as Record<string, string>;
+
 const layersModule = import.meta.glob(
 	"../../content/_layers.md",
 	{ eager: true, query: "?raw", import: "default" },
 ) as Record<string, string>;
 
-const VALID_PHASES: PhaseId[] = ["bash", "creation", "write"];
+const VALID_PHASES: PhaseId[] = ["bash", "creation", "write", "read"];
 const VALID_LAYERS: LayerId[] = [
 	"bash",
 	"syscall-vfs",
@@ -47,6 +53,7 @@ const VALID_LAYERS: LayerId[] = [
 interface Frontmatter {
 	slug?: string;
 	label?: string;
+	scenario?: string;
 	phase?: string;
 	title?: string;
 	keyConcept?: string;
@@ -87,6 +94,7 @@ function parseFrontmatter(raw: string): {
 		} else if (
 			key === "slug" ||
 			key === "label" ||
+			key === "scenario" ||
 			key === "phase" ||
 			key === "title" ||
 			key === "keyConcept" ||
@@ -208,29 +216,55 @@ function parseLayers(raw: string): LayerDefinition[] {
 	return layers;
 }
 
+function parseScenarios(raw: string): ScenarioDefinition[] {
+	const scenarios: ScenarioDefinition[] = parseTableRows(raw).map(
+		([id, label, command, persistent, blurb]) => ({
+			id: id ?? "",
+			label: label ?? id,
+			command: (command ?? "").replace(/^["']|["']$/g, ""),
+			persistent: (persistent ?? "").toLowerCase() === "true",
+			blurb: blurb ?? "",
+		}),
+	);
+	const ids = new Set<string>();
+	for (const s of scenarios) {
+		if (!s.id) throw new Error("[content] scenario missing id");
+		if (ids.has(s.id)) throw new Error(`[content] duplicate scenario "${s.id}"`);
+		ids.add(s.id);
+	}
+	if (!ids.has("write")) throw new Error('[content] scenarios must include "write"');
+	return scenarios;
+}
+
 function parseStep(
 	path: string,
 	raw: string,
 	order: number,
+	scenarioIds: Set<string>,
 ): VisualizationStep {
 	const { frontmatter, body } = parseFrontmatter(raw);
 	const fileSlug = path.split("/").pop()?.replace(/\.md$/, "") ?? path;
 	const expectedSlug = fileSlug.replace(/^\d+-/, "");
 	const slug = frontmatter.slug ?? "";
 	const label = frontmatter.label ?? "";
+	const scenario = frontmatter.scenario ?? "write";
 	const phase = (frontmatter.phase ?? "") as PhaseId;
 	const title = frontmatter.title ?? "";
 	const layers = (frontmatter.layerList ?? []) as LayerId[];
 	const keyConcept = frontmatter.keyConcept ?? "";
 	const simple = frontmatter.simple ?? "";
+	const latencyNs = Number(frontmatter.extra.latency_ns ?? frontmatter.extra.latencyNs ?? NaN);
 	const { description, kernel, device } = splitSections(body);
 	const errors: string[] = [];
 	if (!slug) errors.push("missing slug");
 	if (!label) errors.push("missing label");
 	if (!title) errors.push("missing title");
+	if (!scenarioIds.has(scenario)) errors.push(`unknown scenario "${scenario}"`);
 	if (!phase) errors.push("missing phase");
 	else if (!VALID_PHASES.includes(phase))
 		errors.push(`unknown phase "${phase}"`);
+	if (!Number.isInteger(latencyNs) || latencyNs <= 0)
+		errors.push("missing/invalid latency_ns (positive integer nanoseconds)");
 	if (layers.length === 0) errors.push("missing layers");
 	for (const l of layers) {
 		if (!VALID_LAYERS.includes(l)) errors.push(`unknown layer "${l}"`);
@@ -244,24 +278,36 @@ function parseStep(
 		throw new Error(`[content] ${path}: ${errors.join("; ")}`);
 	}
 	return {
-		slug, label, order, phase, title,
-		description, simple, keyConcept, kernel, device, layers,
+		slug, label, scenario, order, phase, title,
+		description, simple, keyConcept, kernel, device, layers, latencyNs,
 	};
 }
 
 function buildBundle(): ContentBundle {
 	const meta = parseMeta(singleFile(metaModule, "_meta.md"));
 	const phases = parsePhases(singleFile(phasesModule, "_phases.md"));
+	const scenarios = parseScenarios(singleFile(scenariosModule, "_scenarios.md"));
 	const layers = parseLayers(singleFile(layersModule, "_layers.md"));
+	const scenarioIds = new Set(scenarios.map((s) => s.id));
 	const paths = Object.keys(stepModules).sort();
-	const steps = paths.map((p, i) => parseStep(p, stepModules[p], i));
+	const parsed = paths.map((p) => ({ path: p, step: parseStep(p, stepModules[p], -1, scenarioIds) }));
+	// Order steps within each scenario by filename; scenario blocks follow
+	// the _scenarios.md table order.
+	const steps: VisualizationStep[] = [];
+	for (const sc of scenarios) {
+		const group = parsed
+			.filter((e) => e.step.scenario === sc.id)
+			.sort((a, b) => a.path.localeCompare(b.path));
+		group.forEach((e, i) => { e.step.order = i; });
+		steps.push(...group.map((e) => e.step));
+	}
 	const slugs = new Set<string>();
 	const labels = new Set<string>();
 	for (const s of steps) {
 		if (slugs.has(s.slug)) {
 			throw new Error(`[content] duplicate slug "${s.slug}"`);
 		}
-		const key = `${s.phase}:${s.label}`;
+		const key = `${s.scenario}:${s.phase}:${s.label}`;
 		if (labels.has(key)) {
 			throw new Error(`[content] duplicate label "${s.label}"`);
 		}
@@ -276,10 +322,14 @@ function buildBundle(): ContentBundle {
 			}
 		}
 	}
-	return { meta, phases, layers, steps };
+	return { meta, phases, scenarios, layers, steps };
 }
 
 const CONTENT: ContentBundle = buildBundle();
 export const META = CONTENT.meta;
 export const LAYERS = CONTENT.layers;
 export const STEPS = CONTENT.steps;
+export const SCENARIOS = CONTENT.scenarios;
+export function stepsForScenario(scenario: string): VisualizationStep[] {
+	return CONTENT.steps.filter((s) => s.scenario === scenario);
+}
