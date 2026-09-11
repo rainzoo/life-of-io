@@ -34,21 +34,15 @@ export function DurabilityBadge({ order }: { order: number }) {
 
 interface PipelineStackProps {
 	activeLayers: Set<LayerId>;
-	order: number;
 	slug: string;
 	reduceMotion: boolean;
 }
 
 const JOURNAL_COMMIT_SLUGS = new Set(["journal-transaction", "metadata-commit"]);
 const JOURNAL_TRANSIT_SLUGS = new Set(["journal-transaction", "metadata-commit", "fsync-durability"]);
-const DIRTY_SLUGS = new Set([
-	"copy-to-page-cache",
-	"allocate-data-blocks",
-	"writeback-begins",
-	"block-layer-processing",
-	"nvme-command-submission",
-	"ssd-processing",
-]);
+// Slugs whose steps genuinely hold dirty folios. (Only reachable when the
+// transport lane also has page-cache membership — see activeState.)
+const DIRTY_SLUGS = new Set(["copy-to-page-cache", "writeback-begins"]);
 
 function activeState(
 	laneId: string,
@@ -377,7 +371,6 @@ function ResidentStrip({ state, slug, reduceMotion }: { state: string | null; sl
 
 export const PipelineStack = memo(function PipelineStack({
 	activeLayers,
-	order,
 	slug,
 	reduceMotion,
 }: PipelineStackProps) {

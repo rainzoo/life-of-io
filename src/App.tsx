@@ -114,7 +114,7 @@ function App() {
 							<h2 className="f-title mt-1 text-slate-50">{currentStep.title}</h2>
 							<p className="f-body mt-2 text-slate-200">{renderInlineCode(currentStep.description)}</p>
 						</div>
-						<PipelineStack activeLayers={new Set(currentStep.layers)} order={currentStep.order} slug={currentStep.slug} reduceMotion={shouldReduceMotion ?? false} />
+						<PipelineStack activeLayers={new Set(currentStep.layers)} slug={currentStep.slug} reduceMotion={shouldReduceMotion ?? false} />
 					</section>
 
 					<section aria-label="Step" className="min-w-0">
