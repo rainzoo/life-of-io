@@ -86,21 +86,37 @@ npm run build
 ## 🏗 Project Structure
 
 ```
+content/                         # Source of truth — pure Markdown, edit these
+├── README.md                    # Authoring guide + rules
+├── _meta.md                     # Document title, command, filesystem, device
+├── _phases.md                   # Phase table (id, label, blurb)
+├── _layers.md                   # Layer table (id, name, description)
+└── steps/                       # One Markdown file per step (01-…N)
+    ├── 01-command-execution.md
+    └── …                         # frontmatter (slug, label, phase, layers,…)
+                                   # + body, `## Kernel`, `## Device`
+
 src/
-├── App.tsx                    # Main application with state management and controls
+├── App.tsx                    # State, keyboard nav, playback, layout
 ├── main.tsx                   # React application entry point
 ├── index.css                  # Tailwind CSS styles and theme variables
-├── assets/                    # Static assets (favicon, images)
+├── content/
+│   ├── schema.ts              # Canonical types (PhaseId, LayerId, Step, …)
+│   ├── theme.ts               # Design mapping — labels, classes, pipeline lanes
+│   └── load.ts                # Parses + validates Markdown at build time
 ├── components/
 │   ├── ui/                    # shadcn/ui component library re-exports
 │   └── viz/                   # Custom visualization components
-│       ├── LayerLane.tsx      # Individual layer components with icons
-│       └── PhaseBadge.tsx     # Phase indicator badges
-├── data/
-│   └── visualization-data.json  # Complete I/O step definitions and metadata
+│       ├── PhaseBadge.tsx     # Phase indicator badges
+│       ├── PhaseRail.tsx      # Phase navigation rail
+│       ├── PipelineStack.tsx  # Request-travels-through cross-section + durability
+│       ├── StepInspector.tsx  # Current step details (Kernel/Device tabs)
+│       └── TraceScrubber.tsx  # Step scrubber with event markers
 ├── lib/
 │   └── utils.ts               # Utility functions
-└── types/                     # TypeScript type definitions
+
+scripts/
+└── content-check.mjs          # Validates content/ (`npm run content:check`)
 
 public/
 ├── _redirects                 # SPA routing configuration for static hosting

@@ -1,0 +1,80 @@
+#!/usr/bin/env node
+/* global URL, console, process */
+// Validates content/*.md without bundling the app.
+// Usage: npm run content:check
+import { readdirSync, readFileSync, existsSync } from "node:fs";
+import { join, basename } from "node:path";
+
+const root = new URL("..", import.meta.url).pathname;
+const contentDir = join(root, "content");
+const stepsDir = join(contentDir, "steps");
+const VALID_PHASES = ["bash", "creation", "write"];
+const VALID_LAYERS = [
+	"bash", "syscall-vfs", "ext4", "journal", "page-cache",
+	"block", "nvme", "ssd-ftl", "nand", "completion",
+];
+
+function parseFrontmatter(raw) {
+	const match = raw.match(/^---\s*\n([\s\S]*?)\n---\s*\n?([\s\S]*)$/);
+	if (!match) return { fm: {}, body: raw.trim() };
+	const fm = {};
+	for (const line of match[1].split("\n")) {
+		const t = line.trim();
+		if (!t || t.startsWith("#")) continue;
+		const i = t.indexOf(":");
+		if (i === -1) continue;
+		let v = t.slice(i + 1).trim().replace(/^["']|["']$/g, "");
+		fm[t.slice(0, i).trim()] = v;
+	}
+	return { fm, body: (match[2] ?? "").trim() };
+}
+
+const errors = [];
+if (!existsSync(stepsDir)) errors.push("content/steps/ missing");
+const files = existsSync(stepsDir)
+	? readdirSync(stepsDir).filter((f) => f.endsWith(".md")).sort()
+	: [];
+if (files.length === 0) errors.push("no step files found");
+
+const slugs = new Set();
+const labels = new Set();
+for (const f of files) {
+	const path = join(stepsDir, f);
+	const raw = readFileSync(path, "utf8");
+	const { fm, body } = parseFrontmatter(raw);
+	const expected = basename(f, ".md").replace(/^\d+-/, "");
+	for (const k of ["slug", "label", "phase", "title", "layers"]) {
+		if (!fm[k]) errors.push(`${f}: missing ${k}`);
+	}
+	if (fm.slug && fm.slug !== expected)
+		errors.push(`${f}: slug "${fm.slug}" mismatches filename (expected "${expected}")`);
+	if (fm.phase && !VALID_PHASES.includes(fm.phase))
+		errors.push(`${f}: unknown phase "${fm.phase}"`);
+	const layerList = (fm.layers ?? "")
+		.replace(/^\[/, "").replace(/\]$/, "")
+		.split(",").map((s) => s.trim().replace(/^["']|["']$/g, "")).filter(Boolean);
+	for (const l of layerList) {
+		if (!VALID_LAYERS.includes(l)) errors.push(`${f}: unknown layer "${l}"`);
+	}
+	if (fm.slug) {
+		if (slugs.has(fm.slug)) errors.push(`${f}: duplicate slug "${fm.slug}"`);
+		slugs.add(fm.slug);
+	}
+	const lk = `${fm.phase}:${fm.label}`;
+	if (labels.has(lk)) errors.push(`${f}: duplicate label "${fm.label}"`);
+	labels.add(lk);
+	if (!body) errors.push(`${f}: empty body`);
+	if (!/^## Kernel$/mi.test(body)) errors.push(`${f}: missing "## Kernel" section`);
+	if (!/^## Device$/mi.test(body)) errors.push(`${f}: missing "## Device" section`);
+}
+
+for (const name of ["_meta.md", "_phases.md", "_layers.md"]) {
+	if (!existsSync(join(contentDir, name))) errors.push(`content/${name} missing`);
+}
+
+if (errors.length > 0) {
+	console.error("content:check failed:");
+	for (const e of errors) console.error(`  - ${e}`);
+	process.exit(1);
+}
+console.log(`content:check ok — ${files.length} steps`);

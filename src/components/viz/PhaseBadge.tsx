@@ -1,10 +1,5 @@
-export type PhaseId = "bash" | "creation" | "write";
-
-const PHASE_LABELS: Record<PhaseId, string> = {
-	bash: "Phase 0 – Bash & User Space",
-	creation: "Phase 1 – File Creation",
-	write: "Phase 2 – Data Write & Persistence",
-};
+import type { PhaseId } from "@/content/schema";
+import { PHASE_BADGE_CLASS, PHASE_LABELS } from "@/content/theme";
 
 interface PhaseBadgeProps {
 	phase: PhaseId;
@@ -12,12 +7,7 @@ interface PhaseBadgeProps {
 
 export function PhaseBadge({ phase }: PhaseBadgeProps) {
 	const label = PHASE_LABELS[phase];
-	const phaseClass =
-		phase === "bash"
-			? "bg-emerald-500/15 text-emerald-300 border-emerald-400/60"
-			: phase === "creation"
-				? "bg-amber-500/15 text-amber-200 border-amber-400/60"
-				: "bg-purple-500/15 text-purple-200 border-purple-400/60";
+	const phaseClass = PHASE_BADGE_CLASS[phase];
 
 	return (
 		<span
