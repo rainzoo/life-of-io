@@ -20,8 +20,17 @@ const DURABILITY_STYLE: Record<Durability, string> = {
 	durable: "border-emerald-400/60 bg-emerald-500/15 text-emerald-200",
 };
 
-export function DurabilityBadge({ order }: { order: number }) {
-	const d = durabilityForOrder(order);
+export function durabilityForStep(scenario: string, slug: string, order: number): Durability {
+	if (scenario === "touch") {
+		if (slug === "touch-timestamps") return "committed";
+		if (slug === "touch-open") return "ordered";
+		return "buffered";
+	}
+	return durabilityForOrder(order);
+}
+
+export function DurabilityBadge({ scenario, slug, order }: { scenario: string; slug: string; order: number }) {
+	const d = durabilityForStep(scenario, slug, order);
 	return (
 		<span
 			className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 font-mono text-[0.7rem] uppercase tracking-wide ${DURABILITY_STYLE[d]}`}
@@ -40,6 +49,10 @@ interface PipelineStackProps {
 
 const JOURNAL_COMMIT_SLUGS = new Set(["journal-transaction", "metadata-commit"]);
 const JOURNAL_TRANSIT_SLUGS = new Set(["journal-transaction", "metadata-commit", "fsync-durability"]);
+const READ_TRANSIT_SLUGS = new Set(["direct-submit", "direct-completion"]);
+const MISS_SLUGS = new Set(["read-cache-miss", "mmap-fault", "direct-contrast"]);
+const HIT_SLUGS = new Set(["read-cache-hit", "mmap-access"]);
+const COPY_SLUGS = new Set(["read-copy-out"]);
 // Slugs whose steps genuinely hold dirty folios. (Only reachable when the
 // transport lane also has page-cache membership — see activeState.)
 const DIRTY_SLUGS = new Set(["copy-to-page-cache", "writeback-begins"]);
@@ -57,6 +70,10 @@ function activeState(
 	if (laneId === "transport") {
 		const ring = "border-amber-400/70 bg-slate-900 shadow-[0_0_28px_rgba(251,191,36,0.18)]";
 		if (slug === "block-layer-processing") return { ring, chip: "merge", state: "bio-merge" };
+		if (slug === "read-readahead") return { ring, chip: "readahead", state: "fill" };
+		if (MISS_SLUGS.has(slug)) return { ring, chip: "miss", state: "miss" };
+		if (HIT_SLUGS.has(slug)) return { ring, chip: "hit", state: "hit" };
+		if (COPY_SLUGS.has(slug)) return { ring, chip: "copy", state: "copy" };
 		// Folio state only when folios are actually involved; journal/discard
 		// traffic passing through blk-mq/NVMe gets a transit visual instead.
 		if (activeLayers.has("page-cache") || slug === "io-completion") {
@@ -92,7 +109,7 @@ function activeState(
 		return {
 			ring: "border-cyan-400/60 bg-slate-900 shadow-[0_0_28px_rgba(34,211,238,0.15)]",
 			chip: null,
-			state: "pathwalk",
+			state: slug in PATH_STAGE ? "pathwalk" : "trap",
 		};
 	}
 	return { ring: "border-slate-500 bg-slate-800 shadow-md shadow-slate-900/50", chip: null, state: null };
@@ -231,13 +248,15 @@ function L2PMap({ reduceMotion }: { reduceMotion: boolean }) {
 		</div>
 	);
 }
-
-function TransitStrip({ slug, reduceMotion }: { slug: string; reduceMotion: boolean }) {	const label =
+function TransitStrip({ slug, reduceMotion }: { slug: string; reduceMotion: boolean }) {
+	const label =
 		slug === "trim-deleted-blocks"
 			? "discard in transit"
-			: JOURNAL_TRANSIT_SLUGS.has(slug)
-				? "journal in transit"
-				: "write in transit";
+			: READ_TRANSIT_SLUGS.has(slug)
+				? "read in transit"
+				: JOURNAL_TRANSIT_SLUGS.has(slug)
+					? "journal in transit"
+					: "write in transit";
 	return (
 		<div className="flex items-center gap-1.5">
 			<div className="flex items-center gap-1" aria-hidden="true">
@@ -257,12 +276,29 @@ function TransitStrip({ slug, reduceMotion }: { slug: string; reduceMotion: bool
 
 const TERMINAL_CAPTION: Record<string, string> = {
 	"command-execution": "argv + O_CREAT redirection",
-	"open-file-request": "openat → do_sys_open",
+	"open-file-request": "openat → do_sys_openat2",
 	"write-request": "write(fd, buf, count)",
+	"read-command": "argv, stdout → terminal",
+	"read-close": "close(fd) drops the reference",
+	"touch-command": "argv, no redirection",
+	"mmap-command": "argv, fd + prot flags",
+	"direct-command": "argv, O_DIRECT open",
 };
 
+const TERMINAL_TOKENS: Record<string, string[]> = {
+	"read-command": ["cat", "file.txt"],
+	"read-open": ["cat", "file.txt"],
+	"read-close": ["cat", "file.txt"],
+	"touch-command": ["touch", "file.txt"],
+	"touch-open": ["touch", "file.txt"],
+	"mmap-command": ["./reader", "file.txt"],
+	"direct-command": ["./direct_reader", "file.txt"],
+	"direct-open": ["./direct_reader", "file.txt"],
+};
+const DEFAULT_TOKENS = ["echo", '"Hello"', ">", "file.txt"];
+
 function TerminalStrip({ slug, reduceMotion }: { slug: string; reduceMotion: boolean }) {
-	const tokens = ["echo", '"Hello"', ">", "file.txt"];
+	const tokens = TERMINAL_TOKENS[slug] ?? DEFAULT_TOKENS;
 	return (
 		<div key={slug} className="flex flex-col gap-1.5">
 			<div className="flex flex-wrap items-center gap-1 font-mono text-[0.65rem]">
@@ -274,7 +310,7 @@ function TerminalStrip({ slug, reduceMotion }: { slug: string; reduceMotion: boo
 						animate={{ opacity: 1, x: 0 }}
 						transition={{ duration: 0.2, delay: reduceMotion ? 0 : i * 0.12 }}
 						className={
-							i === 2
+							t === ">" || t === "|"
 								? "text-amber-300"
 								: "rounded border border-slate-600/60 bg-slate-800/70 px-1 py-px text-slate-200"
 						}
@@ -294,6 +330,11 @@ const PATH_STAGE: Record<string, number> = {
 	"file-created": 2,
 	"write-request": 2,
 	"fsync-durability": 2,
+	"read-open": 0,
+	"read-path": 1,
+	"read-inode": 2,
+	"touch-open": 2,
+	"direct-open": 1,
 };
 
 const PATH_CAPTION: Record<string, string> = {
@@ -302,7 +343,41 @@ const PATH_CAPTION: Record<string, string> = {
 	"file-created": "dentry + inode instantiated",
 	"write-request": "fd → write_iter dispatch",
 	"fsync-durability": "ext4_sync_file blocks",
+	"read-open": "trap ring 3 → 0 · path_openat",
+	"read-path": "link_path_walk hits cached dentry",
+	"read-inode": "struct file + fd installed",
+	"touch-open": "create path → dirent + inode",
+	"direct-open": "link_path_walk hits cached dentry",
 };
+
+const TRAP_CAPTION: Record<string, string> = {
+	"mmap-setup": "vm_mmap_pgoff → VMA",
+	"mmap-teardown": "__vm_munmap → unmap",
+	"read-close": "__close_fd → fput",
+};
+
+function TrapStrip({ slug, reduceMotion }: { slug: string; reduceMotion: boolean }) {
+	return (
+		<div key={slug} className="flex flex-col gap-1.5">
+			<div className="flex items-center gap-1.5 font-mono text-[0.65rem]">
+				<span className="rounded border border-slate-600/60 bg-slate-800/70 px-1 py-px text-slate-400">
+					ring 3
+				</span>
+				<motion.span
+					animate={reduceMotion ? undefined : { x: [0, 4, 0] }}
+					transition={reduceMotion ? undefined : { duration: 1, repeat: Infinity }}
+					className="text-cyan-300"
+				>
+					→
+				</motion.span>
+				<span className="rounded border border-cyan-300/60 bg-cyan-400/15 px-1 py-px text-cyan-100">
+					ring 0
+				</span>
+			</div>
+			<span className="shrink-0 text-[0.7rem] text-slate-400">{TRAP_CAPTION[slug] ?? "syscall trap"}</span>
+		</div>
+	);
+}
 
 function PathWalk({ slug, reduceMotion }: { slug: string; reduceMotion: boolean }) {
 	const nodes = ["/", "parent", "file.txt"];
@@ -345,10 +420,73 @@ function PathWalk({ slug, reduceMotion }: { slug: string; reduceMotion: boolean 
 }
 
 function ResidentStrip({ state, slug, reduceMotion }: { state: string | null; slug: string; reduceMotion: boolean }) {
-	if (state === "terminal") return <TerminalStrip slug={slug} reduceMotion={reduceMotion} />;
-	if (state === "pathwalk") return <PathWalk slug={slug} reduceMotion={reduceMotion} />;
 	if (state === "bio-merge") return <BioMerge reduceMotion={reduceMotion} />;
 	if (state === "transit") return <TransitStrip slug={slug} reduceMotion={reduceMotion} />;
+	if (state === "fill") {
+		return (
+			<div key={slug} className="flex items-center gap-1.5">
+				{Array.from({ length: 6 }, (_, i) => (
+					<motion.span
+						key={i}
+						initial={reduceMotion ? undefined : { opacity: 0.25, scale: 0.7 }}
+						animate={{ opacity: 1, scale: 1 }}
+						transition={{ duration: 0.3, delay: reduceMotion ? 0 : i * 0.12 }}
+						className={i < 3 ? "h-3 w-2 rounded-sm bg-amber-500/70" : "h-3 w-2 rounded-sm bg-sky-500/70"}
+					/>
+				))}
+				<span className="shrink-0 text-[0.7rem] text-slate-400">readahead fills folios</span>
+			</div>
+		);
+	}
+	if (state === "miss") {
+		return (
+			<div key={slug} className="flex items-center gap-1.5">
+				{Array.from({ length: 6 }, (_, i) => (
+					<span key={i} className="h-3 w-2 rounded-sm border border-dashed border-slate-500/70" />
+				))}
+				<span className="shrink-0 text-[0.7rem] text-slate-400">miss — fetching from device</span>
+			</div>
+		);
+	}
+	if (state === "hit") {
+		return (
+			<div key={slug} className="flex items-center gap-1.5">
+				{Array.from({ length: 6 }, (_, i) => (
+					<motion.span
+						key={i}
+						initial={reduceMotion ? undefined : { opacity: 0.3 }}
+						animate={{ opacity: 1 }}
+						transition={{ duration: 0.2, delay: reduceMotion ? 0 : i * 0.05 }}
+						className="h-3 w-2 rounded-sm bg-sky-500/80 shadow-[0_0_6px_rgba(14,165,233,0.4)]"
+					/>
+				))}
+				<span className="shrink-0 text-[0.7rem] text-slate-400">served from RAM — no device I/O</span>
+			</div>
+		);
+	}
+	if (state === "copy") {
+		return (
+			<div key={slug} className="flex items-center gap-1.5">
+				{Array.from({ length: 4 }, (_, i) => (
+					<span key={i} className="h-3 w-2 rounded-sm bg-sky-500/70" />
+				))}
+				<motion.span
+					animate={reduceMotion ? undefined : { x: [0, 4, 0] }}
+					transition={reduceMotion ? undefined : { duration: 1, repeat: Infinity }}
+					className="font-mono text-[0.7rem] text-sky-300"
+				>
+					→
+				</motion.span>
+				<span className="rounded border border-slate-600/60 bg-slate-800/70 px-1 py-px font-mono text-[0.65rem] text-slate-200">
+					userspace
+				</span>
+				<span className="shrink-0 text-[0.7rem] text-slate-400">folios stay clean</span>
+			</div>
+		);
+	}
+	if (state === "terminal") return <TerminalStrip slug={slug} reduceMotion={reduceMotion} />;
+	if (state === "trap") return <TrapStrip slug={slug} reduceMotion={reduceMotion} />;
+	if (state === "pathwalk") return <PathWalk slug={slug} reduceMotion={reduceMotion} />;
 	if (state === "dirty-folios") {
 		return <FolioGrid slug={slug} dirty={DIRTY_SLUGS.has(slug)} reduceMotion={reduceMotion} />;
 	}

@@ -1,12 +1,15 @@
 import { useReducedMotion } from "framer-motion";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ControlBar } from "@/components/viz/ControlBar";
+import { LatencyWaterfall } from "@/components/viz/LatencyWaterfall";
 import { PhaseRail } from "@/components/viz/PhaseRail";
 import { DurabilityBadge, PipelineStack } from "@/components/viz/PipelineStack";
 import { StepInspector, renderInlineCode } from "@/components/viz/StepInspector";
-import { META, STEPS } from "@/content/load";
+import { META, SCENARIOS, stepsForScenario } from "@/content/load";
 import { PHASE_LABELS } from "@/content/theme";
+
+const DEFAULT_SCENARIO = "write";
 
 // Autoplay lingers on visual-heavy steps so animations can play out.
 const STEP_DWELL_MS: Record<string, number> = {
@@ -17,6 +20,10 @@ const STEP_DWELL_MS: Record<string, number> = {
 	"nand-programming": 2400,
 	"io-completion": 2400,
 	"metadata-commit": 2600,
+	"read-readahead": 2400,
+	"mmap-fault": 2400,
+	"direct-submit": 2000,
+	"touch-open": 2000,
 };
 
 export function dwellForSlug(slug: string): number {
@@ -24,12 +31,16 @@ export function dwellForSlug(slug: string): number {
 }
 
 const getInitialAppState = () => {
-	if (typeof window === "undefined") return { step: 0, speed: 1, play: false };
+	if (typeof window === "undefined") return { scenario: DEFAULT_SCENARIO, step: 0, speed: 1, play: false };
 	const params = new URLSearchParams(window.location.search);
+	const rawScenario = params.get("scenario") ?? DEFAULT_SCENARIO;
+	const scenario = SCENARIOS.some((s) => s.id === rawScenario) ? rawScenario : DEFAULT_SCENARIO;
+	const count = stepsForScenario(scenario).length;
 	const step = Number(params.get("step"));
 	const speed = Number(params.get("speed"));
 	return {
-		step: !Number.isNaN(step) && step >= 0 && step < STEPS.length ? step : 0,
+		scenario,
+		step: !Number.isNaN(step) && step >= 0 && step < count ? step : 0,
 		speed: !Number.isNaN(speed) && speed >= 1 && speed <= 3 ? speed : 1,
 		play: params.get("play") === "1",
 	};
@@ -37,26 +48,34 @@ const getInitialAppState = () => {
 
 function App() {
 	const initialState = getInitialAppState();
+	const [scenarioId, setScenarioId] = useState<string>(initialState.scenario);
+	const steps = useMemo(() => stepsForScenario(scenarioId), [scenarioId]);
+	const scenario = SCENARIOS.find((s) => s.id === scenarioId) ?? SCENARIOS[0];
 	const [currentStepIndex, setCurrentStepIndex] = useState<number>(initialState.step);
 	const [isPlaying, setIsPlaying] = useState<boolean>(initialState.play);
 	const [speed, setSpeed] = useState<number>(initialState.speed);
 	const shouldReduceMotion = useReducedMotion();
 
-	const maxIndex = STEPS.length - 1;
-	const currentStep = STEPS[currentStepIndex];
+	const maxIndex = steps.length - 1;
+	const currentStep = steps[currentStepIndex] ?? steps[0];
 
 	const handleNext = useCallback(() => {
 		setCurrentStepIndex((prev) => {
-			const next = Math.min(prev + 1, STEPS.length - 1);
-			if (next === STEPS.length - 1) setIsPlaying(false);
+			const next = Math.min(prev + 1, maxIndex);
+			if (next === maxIndex) setIsPlaying(false);
 			return next;
 		});
-	}, []);
+	}, [maxIndex]);
 	const handlePrev = useCallback(() => setCurrentStepIndex((p) => Math.max(p - 1, 0)), []);
 	const handleRestart = useCallback(() => { setCurrentStepIndex(0); setIsPlaying(false); }, []);
-	const handlePlayPause = useCallback(() => { setCurrentStepIndex((p) => (p === STEPS.length - 1 ? 0 : p)); setIsPlaying((x) => !x); }, []);
+	const handlePlayPause = useCallback(() => { setCurrentStepIndex((p) => (p === maxIndex ? 0 : p)); setIsPlaying((x) => !x); }, [maxIndex]);
 	const handleScrub = useCallback((index: number) => { setCurrentStepIndex(index); setIsPlaying(false); }, []);
 	const handleSpeedChange = useCallback((value: number[]) => setSpeed(value[0]), []);
+	const handleScenario = useCallback((id: string) => {
+		setScenarioId(id);
+		setCurrentStepIndex(0);
+		setIsPlaying(false);
+	}, []);
 
 	useEffect(() => {
 		const onKey = (event: KeyboardEvent) => {
@@ -87,11 +106,12 @@ function App() {
 	useEffect(() => {
 		if (typeof window === "undefined") return;
 		const params = new URLSearchParams(window.location.search);
+		params.set("scenario", scenarioId);
 		params.set("step", String(currentStepIndex));
 		params.set("speed", String(speed));
 		params.set("play", isPlaying ? "1" : "0");
 		window.history.replaceState({}, "", `${window.location.pathname}?${params.toString()}`);
-	}, [currentStepIndex, speed, isPlaying]);
+	}, [scenarioId, currentStepIndex, speed, isPlaying]);
 
 	return (
 		<TooltipProvider>
@@ -99,30 +119,52 @@ function App() {
 				<header className="flex items-center justify-between gap-3 border-b border-border/60 px-4 py-2.5 md:px-6">
 					<div className="min-w-0">
 						<h1 className="f-title px-2 text-slate-50">Life of IO</h1>
-						<p className="f-mono text-slate-400">{META.command} · {META.filesystem} · {META.device}</p>
+						<p className="f-mono text-slate-400">{scenario.command} · {META.filesystem} · {META.device}</p>
 						<p className="f-body mt-1 max-w-[72ch] text-slate-500">{META.intro}</p>
 					</div>
-					<DurabilityBadge order={currentStep.order} />
+					{scenario.persistent && (
+						<DurabilityBadge scenario={scenarioId} slug={currentStep.slug} order={currentStep.order} />
+					)}
 				</header>
 
 				<main className="mx-auto w-full max-w-[1720px] flex-1 grid grid-cols-1 gap-5 px-4 py-4 md:px-6 lg:grid-cols-[240px_minmax(0,1fr)_minmax(0,400px)]">
-					<PhaseRail steps={STEPS} currentIndex={currentStepIndex} onSelect={handleScrub} />
+					<PhaseRail steps={steps} currentIndex={currentStepIndex} onSelect={handleScrub} />
 
 					<section aria-label="Pipeline" className="flex min-h-0 min-w-0 flex-col gap-3">
+						<div role="tablist" aria-label="Scenario" className="flex flex-wrap gap-1.5">
+							{SCENARIOS.map((s) => (
+								<button
+									key={s.id}
+									type="button"
+									role="tab"
+									aria-selected={s.id === scenarioId}
+									title={s.blurb}
+									onClick={() => handleScenario(s.id)}
+									className={`rounded-full border px-3 py-1 text-[0.75rem] font-medium transition-colors ${
+										s.id === scenarioId
+											? "border-slate-400 bg-slate-700 text-slate-100"
+											: "border-slate-700/60 bg-slate-900/60 text-slate-400 hover:bg-slate-800/60 hover:text-slate-200"
+									}`}
+								>
+									{s.label}
+								</button>
+							))}
+						</div>
 						<div className="rounded-xl border border-border/70 bg-slate-900/60 p-3.5">
-							<p className="f-eyebrow text-slate-500">{PHASE_LABELS[currentStep.phase]} · Step {currentStep.label} of {STEPS.length}</p>
+							<p className="f-eyebrow text-slate-500">{PHASE_LABELS[currentStep.phase]} · Step {currentStep.label} of {steps.length}</p>
 							<h2 className="f-title mt-1 text-slate-50">{currentStep.title}</h2>
 							<p className="f-body mt-2 text-slate-200">{renderInlineCode(currentStep.description)}</p>
 						</div>
+						<LatencyWaterfall steps={steps} index={currentStepIndex} onSelect={handleScrub} />
 						<PipelineStack activeLayers={new Set(currentStep.layers)} slug={currentStep.slug} reduceMotion={shouldReduceMotion ?? false} />
 					</section>
 
 					<section aria-label="Step" className="min-w-0">
-						<StepInspector step={currentStep} index={currentStepIndex} total={STEPS.length} reduceMotion={shouldReduceMotion ?? false} />
+						<StepInspector step={currentStep} index={currentStepIndex} total={steps.length} reduceMotion={shouldReduceMotion ?? false} />
 					</section>
 				</main>
 
-				<ControlBar steps={STEPS} index={currentStepIndex} maxIndex={maxIndex} isPlaying={isPlaying} speed={speed} onRestart={handleRestart} onPrev={handlePrev} onPlayPause={handlePlayPause} onNext={handleNext} onSpeed={handleSpeedChange} onScrub={handleScrub} />
+				<ControlBar steps={steps} index={currentStepIndex} maxIndex={maxIndex} isPlaying={isPlaying} speed={speed} onRestart={handleRestart} onPrev={handlePrev} onPlayPause={handlePlayPause} onNext={handleNext} onSpeed={handleSpeedChange} onScrub={handleScrub} />
 			</div>
 		</TooltipProvider>
 	);

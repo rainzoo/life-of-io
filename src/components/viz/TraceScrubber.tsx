@@ -10,6 +10,9 @@ const MARKERS: Record<string, { label: string; cls: string }> = {
 	"metadata-commit": { label: "COMMIT", cls: "bg-yellow-300" },
 	"fsync-durability": { label: "durable", cls: "bg-emerald-300" },
 	"trim-deleted-blocks": { label: "TRIM", cls: "bg-slate-400" },
+	"read-readahead": { label: "READ", cls: "bg-cyan-300" },
+	"read-cache-hit": { label: "hit", cls: "bg-teal-300" },
+	"direct-completion": { label: "CQ", cls: "bg-emerald-400" },
 };
 
 const LEGEND: { label: string; cls: string }[] = [
@@ -18,6 +21,8 @@ const LEGEND: { label: string; cls: string }[] = [
 	{ label: "clean", cls: "bg-sky-400" },
 	{ label: "durable", cls: "bg-emerald-300" },
 	{ label: "TRIM", cls: "bg-slate-400" },
+	{ label: "READ", cls: "bg-cyan-300" },
+	{ label: "hit", cls: "bg-teal-300" },
 ];
 
 interface TraceScrubberProps {
