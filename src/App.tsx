@@ -8,6 +8,21 @@ import { StepInspector, renderInlineCode } from "@/components/viz/StepInspector"
 import { META, STEPS } from "@/content/load";
 import { PHASE_LABELS } from "@/content/theme";
 
+// Autoplay lingers on visual-heavy steps so animations can play out.
+const STEP_DWELL_MS: Record<string, number> = {
+	"journal-transaction": 2600,
+	"block-layer-processing": 2400,
+	"nvme-command-submission": 2400,
+	"ssd-processing": 2600,
+	"nand-programming": 2400,
+	"io-completion": 2400,
+	"metadata-commit": 2600,
+};
+
+export function dwellForSlug(slug: string): number {
+	return STEP_DWELL_MS[slug] ?? 1600;
+}
+
 const getInitialAppState = () => {
 	if (typeof window === "undefined") return { step: 0, speed: 1, play: false };
 	const params = new URLSearchParams(window.location.search);
@@ -56,10 +71,10 @@ function App() {
 
 	useEffect(() => {
 		if (isPlaying && currentStepIndex < maxIndex) {
-			const timer = setTimeout(() => handleNext(), 1600 / speed);
+			const timer = setTimeout(() => handleNext(), dwellForSlug(currentStep.slug) / speed);
 			return () => clearTimeout(timer);
 		}
-	}, [currentStepIndex, handleNext, isPlaying, maxIndex, speed]);
+	}, [currentStepIndex, handleNext, isPlaying, maxIndex, speed, currentStep.slug]);
 
 	useEffect(() => {
 		const onVisibility = () => {

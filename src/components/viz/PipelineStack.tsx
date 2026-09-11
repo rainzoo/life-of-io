@@ -263,15 +263,19 @@ export const PipelineStack = memo(function PipelineStack({
 	const completionActive = activeLayers.has("completion");
 	return (
 		<div className="relative flex min-h-0 flex-1 flex-col gap-2">
-			<div className="pointer-events-none absolute -right-1.5 bottom-0 top-0 w-px bg-slate-700/60">
-				{completionActive && (
-					<motion.div
-						initial={reduceMotion ? undefined : { opacity: 0, y: 14 }}
-						animate={{ opacity: 1, y: 0 }}
-						transition={{ duration: 0.35 }}
-						className="absolute -left-[3px] top-0 h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.9)]"
-					/>
-				)}
+			<div className="pointer-events-none absolute -right-1.5 bottom-0 top-0 w-px bg-slate-700/60" aria-hidden="true">
+				{completionActive &&
+					(reduceMotion ? (
+						<div className="absolute -left-[3px] top-0 h-1.5 w-1.5 rounded-full bg-emerald-400" />
+					) : (
+						<motion.div
+							key={`cq-${slug}`}
+							initial={{ top: "100%", opacity: 0 }}
+							animate={{ top: "0%", opacity: [0, 1, 1] }}
+							transition={{ duration: 0.9, ease: "easeOut" }}
+							className="absolute -left-[3px] h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.9)]"
+						/>
+					))}
 			</div>
 			{PIPELINE_LANES.map((lane) => {
 				const active = lane.layerIds.some((id) => activeLayers.has(id));

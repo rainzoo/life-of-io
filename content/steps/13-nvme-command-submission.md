@@ -8,11 +8,11 @@ keyConcept: Submission queue
 simple: `nvme_queue_rq()` posts WRITE commands and rings the doorbell register.
 ---
 
-Each block I/O (bio) maps to one or more Non-Volatile Memory Express (NVMe) WRITE commands (opcode `0x01`) with namespace, Logical Block Address (LBA), and Physical Region Page (PRP)/Scatter-Gather List (SGL) addresses. The doorbell write notifies the controller over Peripheral Component Interconnect Express (PCIe).
+Each block I/O (bio) maps to Non-Volatile Memory Express (NVMe) WRITE commands with namespace, Logical Block Address (LBA), and Physical Region Page (PRP)/Scatter-Gather List (SGL) addresses. A doorbell write notifies the controller over Peripheral Component Interconnect Express (PCIe).
 
 ## Kernel
 
-`nvme_queue_rq()` constructs the command, updates the submission queue tail, and performs the memory-mapped I/O (MMIO) doorbell write.
+`nvme_queue_rq()` builds WRITE command (opcode `0x01`), updates the submission queue tail, and rings the memory-mapped I/O (MMIO) doorbell.
 
 ## Device
 

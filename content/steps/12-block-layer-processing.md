@@ -8,7 +8,7 @@ keyConcept: blk-mq
 simple: `submit_bio()` builds multi-page block I/O (bio) buffers; block multi-queue (blk-mq) dispatches across hardware queues.
 ---
 
-Adjacent block I/O (bio) buffers merge into larger segments. The mq-deadline or none scheduler orders them across blk-mq hardware contexts, each carrying a Non-Volatile Memory Express (NVMe) command ID with far more outstanding commands than Serial ATA (SATA) Native Command Queuing (NCQ)'s 32.
+Adjacent block I/O (bio) buffers merge into larger segments. The mq-deadline or none scheduler orders them across blk-mq hardware contexts, each carrying a Non-Volatile Memory Express (NVMe) command ID with far deeper queues than Serial ATA (SATA) Native Command Queuing (NCQ)'s 32.
 
 ## Kernel
 

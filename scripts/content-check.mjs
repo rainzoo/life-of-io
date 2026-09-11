@@ -66,6 +66,35 @@ for (const f of files) {
 	if (!body) errors.push(`${f}: empty body`);
 	if (!/^## Kernel$/mi.test(body)) errors.push(`${f}: missing "## Kernel" section`);
 	if (!/^## Device$/mi.test(body)) errors.push(`${f}: missing "## Device" section`);
+	// Copy budgets keep the UI scannable: one idea per field.
+	// Descriptions carry required first-use expansions, so they get the most room.
+	const BUDGETS = { description: 300, kernel: 140, device: 140, simple: 210 };
+	const parts = body.split(/^##\s.*$/m).map((s) => s.trim());
+	const sections = { description: parts[0] ?? "", kernel: parts[1] ?? "", device: parts[2] ?? "" };
+	for (const [name, limit] of Object.entries({ description: BUDGETS.description, kernel: BUDGETS.kernel, device: BUDGETS.device })) {
+		if (sections[name].length > limit)
+			errors.push(`${f}: ${name} exceeds ${limit} chars (${sections[name].length})`);
+	}
+	if (fm.simple) {
+		if (fm.simple.length > BUDGETS.simple)
+			errors.push(`${f}: simple exceeds ${BUDGETS.simple} chars (${fm.simple.length})`);
+		if (/\.\s+[A-Z]/.test(fm.simple))
+			errors.push(`${f}: simple must be a single sentence`);
+		// Guard against simple restating the body: no 6-word verbatim run
+		// (outside code spans) may appear in both.
+		const norm = (s) =>
+			s.replace(/`[^`]*`/g, " ").toLowerCase().replace(/[^a-z0-9\s]/g, " ")
+				.split(/\s+/).filter((w) => w.length > 3);
+		const sWords = norm(fm.simple);
+		const dWords = ` ${norm(sections.description).join(" ")} `;
+		for (let i = 0; i + 6 <= sWords.length; i++) {
+			const run = ` ${sWords.slice(i, i + 6).join(" ")} `;
+			if (dWords.includes(run)) {
+				errors.push(`${f}: simple restates description ("${sWords.slice(i, i + 6).join(" ")}")`);
+				break;
+			}
+		}
+	}
 }
 
 for (const name of ["_meta.md", "_phases.md", "_layers.md"]) {

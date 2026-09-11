@@ -16,4 +16,4 @@ Opaque to the kernel. The Solid-State Drive (SSD) presents a flat block device; 
 
 ## Device
 
-Wear leveling distributes programs across erase blocks. Background garbage collection (GC) reclaims invalid pages using overprovisioned capacity.
+Wear leveling spreads programs across erase blocks. Background garbage collection (GC) reclaims invalid pages from overprovisioned capacity.

@@ -45,6 +45,9 @@ Rules:
 7. `keyConcept` is a mechanism noun (`Inode`, `bio`, `FTL`), never a role.
 8. No styling, colors, icons, or Tailwind classes in content. Design lives in
    `src/content/theme.ts`.
+9. Copy budgets (enforced by `npm run content:check`): description ≤ 300 chars,
+   Kernel/Device ≤ 140 chars each, `simple` ≤ 210 chars and a single sentence.
+   `simple` must not restate the description with a 6+ word verbatim run.
 
 ## Validation
 
