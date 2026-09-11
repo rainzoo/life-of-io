@@ -5,10 +5,10 @@ phase: creation
 title: Path Resolution
 layers: [syscall-vfs]
 keyConcept: dentry
-simple: `link_path_walk()` resolves the parent dentry and returns a negative dentry for the new name.
+simple: `link_path_walk()` resolves the parent directory entry (dentry) and returns a negative dentry for the new name.
 ---
 
-`link_path_walk()` traverses the dentry cache component by component. Permission checks run via `inode_permission()` at each level. The final lookup yields a negative dentry in the parent.
+`link_path_walk()` traverses the directory entry (dentry) cache component by component. Permission checks run via `inode_permission()` at each level. The final lookup yields a negative dentry in the parent.
 
 ## Kernel
 
@@ -16,4 +16,4 @@ simple: `link_path_walk()` resolves the parent dentry and returns a negative den
 
 ## Device
 
-No media access when dentries and inodes are cached in RAM.
+No media access when directory entries (dentries) and index nodes (inodes) are cached in RAM.

@@ -5,7 +5,7 @@ phase: write
 title: Metadata Commit
 layers: [ext4, journal, block, nvme, ssd-ftl, nand]
 keyConcept: Journal commit
-simple: `jbd2_journal_commit_transaction()` writes the commit block after data reaches final LBAs.
+simple: `jbd2_journal_commit_transaction()` writes the commit block after data reaches final Logical Block Addresses (LBAs).
 ---
 
 The size and extent updates commit only after the ordered data writes complete. The commit block makes the transaction replay-safe; checkpointing later writes metadata in place.

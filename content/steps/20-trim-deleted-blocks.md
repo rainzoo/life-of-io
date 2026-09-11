@@ -5,7 +5,7 @@ phase: write
 title: TRIM Deleted Blocks
 layers: [block, nvme, ssd-ftl, nand]
 keyConcept: TRIM
-simple: `blkdev_issue_discard()` sends Dataset Management (AD) for freed LBAs; the FTL erases blocks lazily.
+simple: `blkdev_issue_discard()` sends Dataset Management (AD) for freed Logical Block Addresses (LBAs); the Flash Translation Layer (FTL) erases blocks lazily.
 ---
 
 On unlink or `fstrim`, the filesystem reports freed ranges. The FTL marks physical blocks erasable, reducing write amplification and restoring program performance.

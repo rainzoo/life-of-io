@@ -5,10 +5,10 @@ phase: creation
 title: Add Directory Entry
 layers: [ext4, journal]
 keyConcept: Directory entry
-simple: `ext4_add_entry()` inserts a dirent binding the filename to the inode number.
+simple: `ext4_add_entry()` inserts a directory entry (dirent) binding the filename to the inode number.
 ---
 
-The parent directory block (or htree index) gains an `ext4_dir_entry_2` record: inode number, rec_len, name_len, file_type, name. The record belongs to the same journal transaction as the inode.
+The parent directory block (or hash-indexed directory tree [htree] index) gains an `ext4_dir_entry_2` record: inode number, rec_len, name_len, file_type, name. The record belongs to the same journal transaction as the inode.
 
 ## Kernel
 

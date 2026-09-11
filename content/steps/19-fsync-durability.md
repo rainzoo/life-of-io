@@ -16,4 +16,4 @@ simple: `ext4_sync_file()` forces writeback, journal commit, and cache flush bef
 
 ## Device
 
-NVMe FLUSH or volatile-write-cache flush drains controller DRAM to NAND before completion.
+Non-Volatile Memory Express (NVMe) FLUSH or volatile-write-cache flush drains controller Dynamic Random-Access Memory (DRAM) to NAND before completion.

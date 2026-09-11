@@ -8,7 +8,7 @@ keyConcept: write
 simple: `write(fd, buf, count)` dispatches through `ksys_write()` to `vfs_write()`.
 ---
 
-The process copies no data yet; it passes a userspace pointer, length, and file position. `ksys_write()` validates the fd and dispatches to the file's `write_iter` operation.
+The process copies no data yet; it passes a userspace pointer, length, and file position. `ksys_write()` validates the file descriptor (fd) and dispatches to the file's `write_iter` operation.
 
 ## Kernel
 

@@ -5,14 +5,14 @@ phase: write
 title: I/O Completion
 layers: [nvme, block, completion]
 keyConcept: Interrupt
-simple: The controller posts completion entries; `blk_mq_complete_request()` ends the bio.
+simple: The controller posts completion entries; `blk_mq_complete_request()` ends the block I/O (bio).
 ---
 
-The SSD writes completion queue entries and raises an MSI-X interrupt. The driver reaps entries, completes the request, and `bio_endio()` propagates status up the stack.
+The Solid-State Drive (SSD) writes completion queue entries and raises a Message Signaled Interrupts Extended (MSI-X) interrupt. The driver reaps entries, completes the request, and `bio_endio()` propagates status up the stack.
 
 ## Kernel
 
-NVMe IRQ → `blk_mq_complete_request()` → `bio_endio()` → `end_page_writeback()` per folio.
+Non-Volatile Memory Express (NVMe) interrupt request (IRQ) → `blk_mq_complete_request()` → `bio_endio()` → `end_page_writeback()` per folio.
 
 ## Device
 
