@@ -2,7 +2,7 @@ import { memo } from "react";
 import { Slider } from "@/components/ui/slider";
 import type { VisualizationStep } from "@/content/schema";
 
-// Event markers on the scrubber, keyed by stable step slug (survives reorder/insert).
+// Event markers keyed by stable step slug (survives reorder/insert).
 const MARKERS: Record<string, { label: string; cls: string }> = {
 	"journal-transaction": { label: "COMMIT", cls: "bg-yellow-300" },
 	"io-completion": { label: "CQ", cls: "bg-emerald-400" },
@@ -26,49 +26,50 @@ export const TraceScrubber = memo(function TraceScrubber({
 	index,
 	onChange,
 }: TraceScrubberProps) {
-	const currentMarker = MARKERS[steps[index].slug];
+	const events = steps
+		.map((s, i) => ({ step: s, i, marker: MARKERS[s.slug] }))
+		.filter((e) => e.marker);
 	return (
 		<div className="space-y-1.5">
-			<div className="relative">
-				<Slider
-					value={[index]}
-					max={steps.length - 1}
-					step={1}
-					onValueChange={(v) => onChange(v[0])}
-					aria-label="Step scrubber"
-				/>
-				<div className="pointer-events-none absolute inset-x-0 top-1/2 flex -translate-y-1/2 justify-between px-[10px]">
-					{steps.map((s, i) => {
-						const marker = MARKERS[s.slug];
-						if (!marker) {
-							return <span key={s.slug} className="h-1 w-px bg-transparent" aria-hidden="true" />;
-						}
+			<Slider
+				value={[index]}
+				max={steps.length - 1}
+				step={1}
+				onValueChange={(v) => onChange(v[0])}
+				aria-label="Step scrubber"
+			/>
+			{events.length > 0 && (
+				<div className="flex flex-wrap items-center gap-1" aria-label="Key events">
+					<span className="mr-1 font-mono text-[0.65rem] uppercase tracking-wide text-slate-500">Events</span>
+					{events.map(({ step, i, marker }) => {
+						const active = i === index;
 						return (
 							<button
-								key={s.slug}
+								key={step.slug}
 								type="button"
-								title={`${marker.label} — ${s.title}`}
-								aria-label={`Jump to ${marker.label}: ${s.title}`}
+								title={`${marker.label} — ${step.title}`}
+								aria-label={`Jump to ${marker.label}: ${step.title}`}
 								onClick={() => onChange(i)}
-								className={`pointer-events-auto h-1.5 w-1.5 shrink-0 rounded-full transition-opacity focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-300 ${marker.cls} ${
-									i === index ? "opacity-100 ring-1 ring-white/80" : "opacity-70 hover:opacity-100"
+								className={`inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 font-mono text-[0.65rem] transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-300 ${
+									active
+										? "border-slate-400 bg-slate-700 text-slate-100 ring-1 ring-white/60"
+										: "border-slate-700/60 bg-slate-900/60 text-slate-400 hover:bg-slate-800/60 hover:text-slate-200"
 								}`}
-							/>
+							>
+								<span className={`h-1.5 w-1.5 shrink-0 rounded-full ${marker.cls}`} aria-hidden="true" />
+								{marker.label}
+								<span className="max-w-[170px] truncate text-slate-500">— {step.title}</span>
+							</button>
 						);
 					})}
 				</div>
-			</div>
+			)}
 			<div className="flex min-h-[1rem] items-center justify-between gap-3 font-mono text-[0.65rem] text-slate-400">
 				<span className="flex min-w-0 flex-1 items-baseline gap-1.5">
 					<span className="shrink-0 tabular-nums text-slate-300">
 						{steps[index].label} · {index + 1}/{steps.length}
 					</span>
 					<span className="truncate text-slate-500">{steps[index].slug}</span>
-					{currentMarker && (
-						<span className={`shrink-0 rounded border border-slate-600/60 bg-slate-800/80 px-1.5 py-px uppercase tracking-wide text-slate-200`}>
-							{currentMarker.label}
-						</span>
-					)}
 				</span>
 			</div>
 		</div>

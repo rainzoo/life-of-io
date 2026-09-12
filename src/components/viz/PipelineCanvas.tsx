@@ -50,6 +50,34 @@ const STATION_ACCENT = ["#34d399", "#22d3ee", "#fb923c", "#fbbf24", "#f87171"];
 const SPINE_X = 200;
 const CQ_X = 224;
 
+// Station names must fit a 146px box. Long names split across two lines
+// (first concept on line one, remainder on line two) and drop the hint.
+function stationLabel(name: string, hint: string, cy: number) {
+	const parts = name.length > 20 ? [name.split(" + ")[0], name.split(" + ").slice(1).join(" + ")] : [name];
+	if (parts.length === 1) {
+		return (
+			<>
+				<text x={22} y={cy - 3} fontFamily="Inter, system-ui, sans-serif" fontSize={13} fontWeight={600} fill="#f1f5f9">
+					{name}
+				</text>
+				<text x={22} y={cy + 17} fontFamily={MONO} fontSize={9.5} fill="#64748b">
+					{hint}
+				</text>
+			</>
+		);
+	}
+	return (
+		<>
+			<text x={22} y={cy - 8} fontFamily="Inter, system-ui, sans-serif" fontSize={12} fontWeight={600} fill="#f1f5f9">
+				{parts[0]}
+			</text>
+			<text x={22} y={cy + 9} fontFamily="Inter, system-ui, sans-serif" fontSize={12} fontWeight={600} fill="#f1f5f9">
+				{parts[1]}
+			</text>
+		</>
+	);
+}
+
 interface PipelineCanvasProps {
 	activeLayers: Set<LayerId>;
 	slug: string;
@@ -107,13 +135,8 @@ export const PipelineCanvas = memo(function PipelineCanvas({
 									fill={active ? "#0f172a" : "rgba(15,23,42,0.5)"}
 									stroke={active ? accent : "#334155"} strokeWidth={active ? 1.6 : 1}
 								/>
-								<text x={22} y={cy - 3} fontFamily="Inter, system-ui, sans-serif" fontSize={13} fontWeight={600} fill="#f1f5f9">
-									{lane.name}
-								</text>
-								<text x={22} y={cy + 17} fontFamily={MONO} fontSize={9.5} fill="#64748b">
-									{lane.hint}
-								</text>
-								<line x1={176} y1={cy} x2={SPINE_X - 8} y2={cy} stroke={active ? accent : "#475569"} strokeWidth={1.4} />
+							{stationLabel(lane.name, lane.hint, cy)}
+							<line x1={176} y1={cy} x2={SPINE_X - 8} y2={cy} stroke={active ? accent : "#475569"} strokeWidth={1.4} />
 								<circle cx={SPINE_X} cy={cy} r={3.5} fill={active ? accent : "#475569"} />
 							</motion.g>
 						);
