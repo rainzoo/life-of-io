@@ -1,4 +1,4 @@
-import { useReducedMotion } from "framer-motion";
+import { useReducedMotion } from "motion/react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ControlBar } from "@/components/viz/ControlBar";
@@ -153,7 +153,10 @@ function App() {
 						<div className="rounded-xl border border-border/70 bg-slate-900/60 p-3.5">
 							<p className="f-eyebrow text-slate-500">{PHASE_LABELS[currentStep.phase]} · Step {currentStep.label} of {steps.length}</p>
 							<h2 className="f-title mt-1 text-slate-50">{currentStep.title}</h2>
-							<p className="f-body mt-2 text-slate-200">{renderInlineCode(currentStep.description)}</p>
+							<p className="f-body mt-2 text-slate-200">
+								<span className="mr-2 rounded border border-slate-600/60 bg-slate-800/80 px-1.5 py-0.5 font-mono text-[0.7rem] text-cyan-200">{currentStep.keyConcept}</span>
+								{renderInlineCode(currentStep.simple)}
+							</p>
 						</div>
 						<LatencyWaterfall steps={steps} index={currentStepIndex} onSelect={handleScrub} />
 						<PipelineStack activeLayers={new Set(currentStep.layers)} slug={currentStep.slug} reduceMotion={shouldReduceMotion ?? false} />

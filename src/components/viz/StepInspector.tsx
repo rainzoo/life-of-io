@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { CircuitBoard, Cpu } from "lucide-react";
 import { memo, useState } from "react";
 import type { ReactNode } from "react";
@@ -87,10 +87,11 @@ export const StepInspector = memo(function StepInspector({
 			</div>
 			{/* Scrollable body */}
 			<div className="flex-1 overflow-y-auto px-3 py-3">
+				<p className="f-body text-slate-300">{renderInlineCode(step.description)}</p>
 				<motion.p
 					key={`${step.slug}-${tab}`}
-					initial={reduceMotion ? undefined : { opacity: 0, x: 8 }}
-					animate={{ opacity: 1, x: 0 }}
+					initial={reduceMotion ? undefined : { opacity: 0 }}
+					animate={{ opacity: 1 }}
 					transition={{ duration: 0.2 }}
 					className="f-body text-slate-200"
 				>

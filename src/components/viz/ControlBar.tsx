@@ -1,4 +1,4 @@
-import { Pause, Play, RotateCcw, SkipBack, SkipForward } from "lucide-react";
+import { Pause, Play, Repeat, RotateCcw, SkipBack, SkipForward } from "lucide-react";
 import { memo } from "react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
@@ -43,13 +43,13 @@ export const ControlBar = memo(function ControlBar({
 				<Button variant="outline" size="icon" onClick={onPrev} disabled={index === 0} aria-label="Previous step (←)" aria-keyshortcuts="ArrowLeft" title="Previous (←)" className={iconBtn}>
 					<SkipBack className="h-5 w-5" />
 				</Button>
-				<Button variant="default" size="icon" onClick={onPlayPause} aria-label={isPlaying ? "Pause playback (Enter)" : "Play timeline (Enter)"} aria-keyshortcuts="Enter" title="Play/Pause (Enter)" className="bg-slate-700 text-white hover:bg-slate-600">
-					{isPlaying ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}
+				<Button variant="default" size="icon" onClick={onPlayPause} aria-label={isPlaying ? "Pause playback (Enter)" : index === maxIndex ? "Replay timeline (Enter)" : "Play timeline (Enter)"} aria-keyshortcuts="Enter" title={index === maxIndex && !isPlaying ? "Replay (Enter)" : "Play/Pause (Enter)"} className="bg-slate-700 text-white hover:bg-slate-600">
+					{isPlaying ? <Pause className="h-5 w-5" /> : index === maxIndex ? <Repeat className="h-5 w-5" /> : <Play className="h-5 w-5" />}
 				</Button>
 				<Button variant="outline" size="icon" onClick={onNext} disabled={index === maxIndex} aria-label="Next step (→ or Space)" aria-keyshortcuts="ArrowRight" title="Next (→ / Space)" className={iconBtn}>
 					<SkipForward className="h-5 w-5" />
 				</Button>
-				<span className="mx-2 hidden font-mono text-[0.7rem] text-slate-400 lg:inline">{index + 1}/{steps.length}</span>
+				<span className="mx-2 hidden font-mono text-[0.7rem] tabular-nums text-slate-400 lg:inline">{index + 1}/{steps.length}</span>
 				<div className="flex items-center gap-1 rounded-full border border-slate-600 bg-slate-800 px-1.5 py-0.5">
 					<Slider min={1} max={3} step={1} value={[speed]} onValueChange={onSpeed} className="w-24" aria-label="Playback speed" />
 					<span className="w-8 text-center font-mono text-[0.7rem] text-slate-200">{speed.toFixed(1)}x</span>

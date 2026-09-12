@@ -1,3 +1,4 @@
+import { motion } from "motion/react";
 import { memo } from "react";
 import type { VisualizationStep } from "@/content/schema";
 
@@ -57,11 +58,13 @@ export const LatencyWaterfall = memo(function LatencyWaterfall({
 							onClick={() => onSelect(i)}
 							className="flex h-full min-w-0 flex-1 items-end rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-300"
 						>
-							<span
+							<motion.span
+								initial={false}
+								animate={{ height: `${12 + frac * 88}%` }}
+								transition={{ duration: 0.3 }}
 								className={`w-full rounded-sm ${PHASE_BAR[s.phase] ?? "bg-slate-500/80"} ${
 									active ? "opacity-100 ring-1 ring-white/80" : "opacity-50 hover:opacity-90"
 								}`}
-								style={{ height: `${12 + frac * 88}%` }}
 							/>
 						</button>
 					);
