@@ -38,7 +38,6 @@ export const StepInspector = memo(function StepInspector({
 						{step.label} · {index + 1}/{total}
 					</span>
 				</div>
-				<p className="f-mono mt-2 text-slate-400">[{step.keyConcept}] {renderInlineCode(step.simple)}</p>
 			</header>
 			{/* Scrollable body: description, then both mechanism sections.
 			    Kernel and Device are complements, not alternatives, so both

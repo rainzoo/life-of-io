@@ -1,6 +1,7 @@
 import { memo, useEffect, useState } from "react";
 import type { PhaseId, VisualizationStep } from "@/content/schema";
 import { PHASE_BADGE_CLASS } from "@/content/theme";
+import { eventForSlug } from "./events";
 
 const ORDER: PhaseId[] = ["bash", "creation", "write", "read"];
 const PHASE_LABEL: Record<PhaseId, string> = {
@@ -69,12 +70,14 @@ export const PhaseRail = memo(function PhaseRail({
 								{phaseSteps.map((s) => {
 										const rendered = steps.indexOf(s);
 										const active = rendered === currentIndex;
+										const event = eventForSlug(s.slug);
 										return (
 											<li key={s.slug}>
 												<button
 													type="button"
 													onClick={() => onSelect(rendered)}
 													aria-current={active ? "step" : undefined}
+													title={event ? `${s.title} — ${event.label}` : s.title}
 													className={`flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-[0.8rem] transition-colors ${
 													active
 													? "bg-slate-700/70 text-slate-100"
@@ -84,6 +87,9 @@ export const PhaseRail = memo(function PhaseRail({
 												<span className="w-5 shrink-0 font-mono text-[0.65rem] text-slate-500">
 												{s.label}
 												</span>
+												{event && (
+													<span className={`h-1.5 w-1.5 shrink-0 rounded-full ${event.cls}`} aria-hidden="true" />
+												)}
 												<span className="min-w-0 flex-1 truncate">{s.title}</span>
 											</button>
 										</li>

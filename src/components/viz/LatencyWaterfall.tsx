@@ -40,7 +40,7 @@ export const LatencyWaterfall = memo(function LatencyWaterfall({
 			<div className="flex items-baseline justify-between gap-2">
 				<p className="f-eyebrow text-slate-500">Typical step latency · order-of-magnitude</p>
 				<p className="f-mono shrink-0 text-slate-300">
-					{current ? `${formatLatency(current.latencyNs)} · ${current.title}` : ""}
+					{current ? `~${formatLatency(current.latencyNs)}` : ""}
 				</p>
 			</div>
 			<div className="mt-2 flex h-14 items-end gap-1" role="tablist" aria-label="Latency per step">
