@@ -1,6 +1,6 @@
 import { motion } from "motion/react";
 import { CircuitBoard, Cpu } from "lucide-react";
-import { memo, useMemo, useState } from "react";
+import { memo, useMemo } from "react";
 import type { VisualizationStep } from "@/content/schema";
 import { renderInlineCode, termsInText } from "@/lib/inline-code";
 import { PhaseBadge } from "./PhaseBadge";
@@ -12,21 +12,12 @@ interface StepInspectorProps {
 	reduceMotion: boolean;
 }
 
-type Tab = "kernel" | "device";
-
-const TABS: { id: Tab; label: string; Icon: typeof Cpu }[] = [
-	{ id: "kernel", label: "Kernel", Icon: Cpu },
-	{ id: "device", label: "Device", Icon: CircuitBoard },
-];
-
 export const StepInspector = memo(function StepInspector({
 	step,
 	index,
 	total,
 	reduceMotion,
 }: StepInspectorProps) {
-	const [tab, setTab] = useState<Tab>("kernel");
-	const body = tab === "kernel" ? step.kernel : step.device;
 	const terms = useMemo(
 		() => termsInText(step.description, step.kernel, step.device, step.simple),
 		[step],
@@ -49,42 +40,32 @@ export const StepInspector = memo(function StepInspector({
 				</div>
 				<p className="f-mono mt-2 text-slate-400">[{step.keyConcept}] {renderInlineCode(step.simple)}</p>
 			</header>
-			{/* Tabs */}
-			<div
-				role="tablist"
-				aria-label="Mechanism"
-				className="mx-2 flex gap-1 rounded-lg border border-slate-700/70 bg-slate-950/70 p-1"
-			>
-				{TABS.map(({ id, label, Icon }) => (
-					<button
-						key={id}
-						role="tab"
-						aria-selected={tab === id}
-						type="button"
-						onClick={() => setTab(id)}
-						className={`flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-1.5 text-[0.75rem] font-medium transition-colors ${
-							tab === id
-								? "bg-slate-700 text-slate-100"
-								: "text-slate-400 hover:text-slate-200"
-						}`}
-					>
-						<Icon className="h-3.5 w-3.5" />
-						{label}
-					</button>
-				))}
-			</div>
-			{/* Scrollable body */}
+			{/* Scrollable body: description, then both mechanism sections.
+			    Kernel and Device are complements, not alternatives, so both
+			    render — no toggle click required. */}
 			<div className="flex-1 overflow-y-auto px-3 py-3">
 				<p className="f-body text-slate-300">{renderInlineCode(step.description)}</p>
-				<motion.p
-					key={`${step.slug}-${tab}`}
+				<motion.div
+					key={step.slug}
 					initial={reduceMotion ? undefined : { opacity: 0 }}
 					animate={{ opacity: 1 }}
 					transition={{ duration: 0.2 }}
-					className="f-body text-slate-200"
 				>
-					{renderInlineCode(body)}
-				</motion.p>
+					{(
+						[
+							{ label: "Kernel", Icon: Cpu, text: step.kernel },
+							{ label: "Device", Icon: CircuitBoard, text: step.device },
+						] as const
+					).map(({ label, Icon, text }) => (
+						<section key={label} aria-label={label} className="mt-3">
+							<p className="flex items-center gap-1.5 text-[0.7rem] font-semibold uppercase tracking-wider text-slate-400">
+								<Icon className="h-3.5 w-3.5" aria-hidden="true" />
+								{label}
+							</p>
+							<p className="f-body mt-1 text-slate-200">{renderInlineCode(text)}</p>
+						</section>
+					))}
+				</motion.div>
 				{terms.length > 0 && (
 					<div className="mt-3 rounded-lg border border-slate-700/60 bg-slate-950/60 px-2.5 py-2">
 						<p className="f-eyebrow text-slate-500">Terms in this step</p>
