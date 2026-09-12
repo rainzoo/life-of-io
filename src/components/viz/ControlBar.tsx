@@ -1,5 +1,6 @@
 import { Pause, Play, Repeat, RotateCcw, SkipBack, SkipForward } from "lucide-react";
-import { memo } from "react";
+import { motion, useReducedMotion } from "motion/react";
+import { memo, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import type { VisualizationStep } from "@/content/schema";
@@ -21,6 +22,16 @@ interface ControlBarProps {
 
 const iconBtn = "border-slate-600 bg-slate-800 text-slate-100 hover:bg-slate-700 hover:text-white disabled:opacity-40";
 
+const PLAYED_KEY = "life-of-io:has-played";
+
+function hasPlayedBefore(): boolean {
+	try {
+		return localStorage.getItem(PLAYED_KEY) === "1";
+	} catch {
+		return true;
+	}
+}
+
 export const ControlBar = memo(function ControlBar({
 	steps,
 	index,
@@ -34,6 +45,21 @@ export const ControlBar = memo(function ControlBar({
 	onSpeed,
 	onScrub,
 }: ControlBarProps) {
+	// First-run cue: pulse the Play button until the user interacts once.
+	// Finite (3 pulses), persisted, and fully suppressed under reduced motion.
+	const [seenPlay, setSeenPlay] = useState(hasPlayedBefore);
+	const reduceMotion = useReducedMotion();
+	useEffect(() => {
+		if (isPlaying || index !== 0) {
+			setSeenPlay(true);
+			try {
+				localStorage.setItem(PLAYED_KEY, "1");
+			} catch {
+				// Private mode etc. — cue simply shows again next visit.
+			}
+		}
+	}, [isPlaying, index]);
+	const showCue = !seenPlay && !isPlaying && index === 0 && !reduceMotion;
 	return (
 		<footer className="sticky bottom-0 z-10 flex flex-col gap-2 border-t border-border/60 bg-slate-900/90 px-4 py-2 backdrop-blur md:px-6 lg:flex-row lg:items-center">
 			<div className="flex items-center gap-1.5">
@@ -43,8 +69,17 @@ export const ControlBar = memo(function ControlBar({
 				<Button variant="outline" size="icon" onClick={onPrev} disabled={index === 0} aria-label="Previous step (←)" aria-keyshortcuts="ArrowLeft" title="Previous (←)" className={iconBtn}>
 					<SkipBack className="h-5 w-5" />
 				</Button>
-				<Button variant="default" size="icon" onClick={onPlayPause} aria-label={isPlaying ? "Pause playback (Enter)" : index === maxIndex ? "Replay timeline (Enter)" : "Play timeline (Enter)"} aria-keyshortcuts="Enter" title={index === maxIndex && !isPlaying ? "Replay (Enter)" : "Play/Pause (Enter)"} className="bg-slate-700 text-white hover:bg-slate-600">
+				<Button variant="default" size="icon" onClick={onPlayPause} aria-label={isPlaying ? "Pause playback (Enter)" : index === maxIndex ? "Replay timeline (Enter)" : "Play timeline (Enter)"} aria-keyshortcuts="Enter" title={index === maxIndex && !isPlaying ? "Replay (Enter)" : "Play/Pause (Enter)"} className="relative bg-slate-700 text-white hover:bg-slate-600">
 					{isPlaying ? <Pause className="h-5 w-5" /> : index === maxIndex ? <Repeat className="h-5 w-5" /> : <Play className="h-5 w-5" />}
+					{showCue && (
+						<motion.span
+							aria-hidden="true"
+							className="pointer-events-none absolute inset-0 rounded-md border border-cyan-300"
+							initial={{ opacity: 0, scale: 1 }}
+							animate={{ opacity: [0, 0.9, 0], scale: [1, 1.3, 1.3] }}
+							transition={{ duration: 1.6, repeat: 2 }}
+						/>
+					)}
 				</Button>
 				<Button variant="outline" size="icon" onClick={onNext} disabled={index === maxIndex} aria-label="Next step (→ or Space)" aria-keyshortcuts="ArrowRight" title="Next (→ / Space)" className={iconBtn}>
 					<SkipForward className="h-5 w-5" />

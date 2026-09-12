@@ -1,4 +1,4 @@
-import { memo, useEffect, useState } from "react";
+import { memo, useState } from "react";
 import type { PhaseId, VisualizationStep } from "@/content/schema";
 import { PHASE_BADGE_CLASS } from "@/content/theme";
 import { eventForSlug } from "./events";
@@ -17,6 +17,26 @@ interface PhaseRailProps {
 	onSelect: (index: number) => void;
 }
 
+/** Event dots for a collapsed phase header, so key moments stay discoverable. */
+function PhaseEventDots({ steps }: { steps: VisualizationStep[] }) {
+	const events = steps.flatMap((s) => {
+		const marker = eventForSlug(s.slug);
+		return marker ? [{ slug: s.slug, title: s.title, ...marker }] : [];
+	});
+	if (events.length === 0) return null;
+	return (
+		<span
+			className="flex items-center gap-0.5"
+			title={events.map((e) => `${e.label} — ${e.title}`).join(", ")}
+			aria-hidden="true"
+		>
+			{events.map((e) => (
+				<span key={e.slug} className={`h-1.5 w-1.5 rounded-full ${e.cls}`} />
+			))}
+		</span>
+	);
+}
+
 export const PhaseRail = memo(function PhaseRail({
 	steps,
 	currentIndex,
@@ -25,10 +45,13 @@ export const PhaseRail = memo(function PhaseRail({
 	const current = steps[currentIndex];
 	const currentPhase = current ? current.phase : ORDER[0];
 	const [open, setOpen] = useState<PhaseId | null>(currentPhase);
-
-	useEffect(() => {
+	const [prevPhase, setPrevPhase] = useState(currentPhase);
+	// Follow the current phase without an effect: adjusting state during
+	// render for a changed prop is the sanctioned pattern (no cascade).
+	if (prevPhase !== currentPhase) {
+		setPrevPhase(currentPhase);
 		setOpen(currentPhase);
-	}, [currentPhase]);
+	}
 
 	return (
 		<nav aria-label="Phases" className="flex flex-col gap-1.5">
@@ -63,7 +86,10 @@ export const PhaseRail = memo(function PhaseRail({
 								</span>
 								<span>{PHASE_LABEL[phase]}</span>
 							</span>
-							<span className="font-mono text-[0.65rem] text-slate-500">{phaseSteps.length}</span>
+							<span className="flex items-center gap-1.5">
+								{!expanded && <PhaseEventDots steps={phaseSteps} />}
+								<span className="font-mono text-[0.65rem] text-slate-500">{phaseSteps.length}</span>
+							</span>
 						</button>
 						{expanded && (
 							<ul className="mt-1 flex flex-col gap-0.5">

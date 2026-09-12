@@ -37,7 +37,7 @@ export function ScenarioCard({ scenario }: ScenarioCardProps) {
 					</span>
 				</span>
 			</div>
-			<p className="f-mono truncate text-cyan-200/90">{scenario.command}</p>
+			<p className="f-mono truncate text-cyan-200/90" title={scenario.command}>{scenario.command}</p>
 			<p className="f-body text-slate-400">{scenario.blurb}</p>
 			<span className="f-mono mt-auto pt-1 text-[0.75rem] text-slate-500 transition-colors group-hover:text-slate-300">
 				Explore →

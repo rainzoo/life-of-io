@@ -1,4 +1,3 @@
-import { TooltipProvider } from "@/components/ui/tooltip";
 import { SiteNav } from "@/components/SiteNav";
 import { ScenarioCard } from "@/components/landing/ScenarioCard";
 import { exploreUrl, navigate } from "@/lib/route";
@@ -15,7 +14,7 @@ const HOW_IT_WORKS = [
 	},
 	{
 		title: "3 · Read the evidence",
-		body: "Latency waterfall shows order-of-magnitude cost; Kernel / Device tabs explain the mechanism.",
+		body: "Latency waterfall shows order-of-magnitude cost; stacked Kernel / Device sections explain the mechanism.",
 	},
 ] as const;
 
@@ -30,18 +29,9 @@ export function LandingPage() {
 	const defaultHref = exploreUrl("write");
 
 	return (
-		<TooltipProvider>
-			<div className="flex min-h-screen flex-col bg-slate-950 text-foreground">
-				<SiteNav />
-				<header className="border-b border-border/60 px-4 py-2.5 md:px-6">
-					<div className="mx-auto w-full max-w-[1120px]">
-						<p className="f-mono px-2 text-slate-400">
-							{META.filesystem} · {META.device}
-						</p>
-					</div>
-				</header>
-
-				<main className="mx-auto flex w-full max-w-[1120px] flex-1 flex-col gap-10 px-4 py-8 md:px-6 md:py-12">
+		<div className="flex min-h-screen flex-col bg-slate-950 text-foreground">
+			<SiteNav />
+			<main className="mx-auto flex w-full max-w-[1120px] flex-1 flex-col gap-10 px-4 py-8 md:px-6 md:py-12">
 					{/* Hero */}
 					<section aria-label="Introduction" className="flex flex-col gap-4">
 						<p className="f-eyebrow text-slate-500">
@@ -65,11 +55,11 @@ export function LandingPage() {
 							>
 								Pick a scenario
 							</a>
-						</div>
-						<p className="f-mono text-slate-500">
-							No setup · runs in your browser · deep-linkable steps
-						</p>
-					</section>
+					</div>
+					<p className="f-mono text-slate-500">
+						Runs in your browser · deep-linkable steps
+					</p>
+				</section>
 
 					{/* How it works */}
 					<section aria-label="How it works" className="grid grid-cols-1 gap-3 md:grid-cols-3">
@@ -147,8 +137,7 @@ export function LandingPage() {
 							Open the visualizer →
 						</a>
 					</div>
-				</footer>
-			</div>
-		</TooltipProvider>
+			</footer>
+		</div>
 	);
 }

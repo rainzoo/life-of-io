@@ -1,6 +1,5 @@
 import { useReducedMotion } from "motion/react";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { TooltipProvider } from "@/components/ui/tooltip";
 import { SiteNav } from "@/components/SiteNav";
 import { ControlBar } from "@/components/viz/ControlBar";
 import { LatencyWaterfall } from "@/components/viz/LatencyWaterfall";
@@ -110,13 +109,18 @@ export function VizApp() {
 	}, [scenarioId, currentStepIndex, speed, isPlaying]);
 
 	return (
-		<TooltipProvider>
-			<div className="flex min-h-screen flex-col bg-slate-950 text-foreground">
+		<div className="flex min-h-screen flex-col bg-slate-950 text-foreground">
 			<SiteNav />
 			<header className="border-b border-border/60 px-4 py-2.5 md:px-6">
-				<div className="min-w-0">
+				<div className="flex min-w-0 flex-wrap items-baseline gap-x-3">
 					<p className="f-mono text-slate-400">{scenario.command} · {META.filesystem} · {META.device}</p>
-					<p className="f-body mt-1 max-w-[72ch] text-slate-500">{META.intro}</p>
+					<details className="group">
+						<summary className="f-mono cursor-pointer list-none text-[0.8rem] text-slate-500 hover:text-slate-300">
+							<span className="mr-1 inline-block transition-transform group-open:rotate-90" aria-hidden="true">▸</span>
+							About
+						</summary>
+						<p className="f-body mt-1 max-w-[72ch] text-slate-500">{META.intro}</p>
+					</details>
 				</div>
 				</header>
 
@@ -155,7 +159,7 @@ export function VizApp() {
 								<DurabilityBadge scenario={scenarioId} slug={currentStep.slug} order={currentStep.order} />
 							)}
 						</div>
-							<h2 className="f-title mt-1 text-slate-50">{currentStep.title}</h2>
+							<h2 aria-live="polite" className="f-title mt-1 text-slate-50">{currentStep.title}</h2>
 							<p className="f-body mt-2 text-slate-200">
 								<span className="mr-2 rounded border border-slate-600/60 bg-slate-800/80 px-1.5 py-0.5 font-mono text-[0.7rem] text-cyan-200">{currentStep.keyConcept}</span>
 								{renderInlineCode(currentStep.simple)}
@@ -175,6 +179,5 @@ export function VizApp() {
 
 				<ControlBar steps={steps} index={currentStepIndex} maxIndex={maxIndex} isPlaying={isPlaying} speed={speed} onRestart={handleRestart} onPrev={handlePrev} onPlayPause={handlePlayPause} onNext={handleNext} onSpeed={handleSpeedChange} onScrub={handleScrub} />
 			</div>
-		</TooltipProvider>
 	);
 }
