@@ -1,4 +1,4 @@
-import { HG, HeroFrame, Stage, Tag } from "./hero";
+import { HG, HeroFrame, Tag } from "./hero";
 import type { HeroSceneProps } from "./hero";
 
 const DIRTY = new Set(["copy-to-page-cache", "writeback-begins"]);
@@ -32,7 +32,6 @@ export function HeroFolio({ slug, reduceMotion }: HeroSceneProps) {
 					</HG>
 				);
 			})}
-			<Stage x={24} y={168} text={dirty || readahead ? "01 · folios in DRAM" : "01 · folios draining to device"} />
 			<line x1={24} y1={188} x2={376} y2={188} stroke="#1e293b" strokeWidth={1} />
 			<HG reduceMotion={reduceMotion} d={0.65}>
 				<rect x={24} y={210} width={352} height={84} rx={8} fill="none" stroke="#475569" strokeWidth={1.4} strokeDasharray="8 6" />
@@ -43,7 +42,6 @@ export function HeroFolio({ slug, reduceMotion }: HeroSceneProps) {
 					{dirty || readahead ? "a crash here loses the data" : "safe to evict or crash"}
 				</text>
 			</HG>
-			<Stage x={24} y={318} text="02 · durability state" />
 			<HG reduceMotion={reduceMotion} d={0.9}>
 				<Tag
 					x={24} y={336} w={352} h={48} fsize={11}

@@ -1,5 +1,5 @@
 import { motion } from "motion/react";
-import { DrawLine, HG, HeroFrame, Stage, Tag } from "./hero";
+import { DrawLine, HG, HeroFrame, Tag } from "./hero";
 import type { HeroSceneProps } from "./hero";
 
 /** Hero 7: FTL remap (overwrite = new page, old invalidated) + NAND program. */
@@ -23,7 +23,6 @@ export function HeroFtlNand({ slug, reduceMotion }: HeroSceneProps) {
 					PBA <tspan textDecoration="line-through">0x31 ✕</tspan> invalid
 				</text>
 			</HG>
-			<Stage x={24} y={216} text="01 · remap (log-structured, no overwrite)" />
 			<line x1={24} y1={234} x2={376} y2={234} stroke="#1e293b" strokeWidth={1} />
 			{Array.from({ length: 5 }, (_, i) => {
 				const hot = programming && i === 2;
@@ -39,7 +38,6 @@ export function HeroFtlNand({ slug, reduceMotion }: HeroSceneProps) {
 					</HG>
 				);
 			})}
-			<Stage x={24} y={362} text="02 · program one page (erase is whole-block, later)" />
 		</HeroFrame>
 	);
 }

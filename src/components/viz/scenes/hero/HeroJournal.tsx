@@ -1,4 +1,4 @@
-import { DrawLine, HG, HeroFrame, Stage, Tag } from "./hero";
+import { DrawLine, HG, HeroFrame, Tag } from "./hero";
 import type { HeroSceneProps } from "./hero";
 
 /** Hero 3: JBD2 journal — sequential append with the ordered-mode gate. */
@@ -34,12 +34,10 @@ export function HeroJournal({ slug, reduceMotion }: HeroSceneProps) {
 					/>
 				</HG>
 			))}
-			<Stage x={96} y={140} text="01 · sequential append" />
 			<line x1={24} y1={196} x2={376} y2={196} stroke="#1e293b" strokeWidth={1} />
 			<HG reduceMotion={reduceMotion} d={0.9}>
 				<Tag x={96} y={218} w={280} h={56} label="atomic replay unit" fill="rgba(52,211,153,0.1)" stroke="#34d399" color="#a7f3d0" />
 			</HG>
-			<Stage x={96} y={298} text="02 · COMMIT seals it" />
 			{commit && (
 				<HG reduceMotion={reduceMotion} d={1.1}>
 					<Tag x={96} y={320} w={280} h={52} label="ordered: data on disk BEFORE commit" fill="none" stroke="#fcd34d" color="#fde68a" fsize={11} dash="6 4" />

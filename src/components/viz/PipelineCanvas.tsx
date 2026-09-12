@@ -2,7 +2,8 @@ import { AnimatePresence, motion } from "motion/react";
 import { memo, useEffect, useRef } from "react";
 import type { LayerId } from "@/content/schema";
 import { PIPELINE_LANES } from "@/content/theme";
-import { HeroSceneForSlug, sceneForSlug } from "./scenes/hero";
+import { HeroSceneForSlug } from "./scenes/hero";
+import { sceneForSlug } from "./scenes/hero/scene-map";
 
 const MONO = "JetBrains Mono, ui-monospace, monospace";
 
@@ -82,9 +83,16 @@ export const PipelineCanvas = memo(function PipelineCanvas({
 				<svg viewBox="0 0 244 520" className="h-[470px] w-[220px] shrink-0" role="img" aria-label="I/O path">
 					{/* spine */}
 					<line x1={SPINE_X} y1={STATION_CY[0]} x2={SPINE_X} y2={STATION_CY[STATION_CY.length - 1]} stroke="#334155" strokeWidth={2} />
-					{/* CQ rail: permanent, dashed */}
-					<line x1={CQ_X} y1={STATION_CY[0]} x2={CQ_X} y2={STATION_CY[STATION_CY.length - 1]} stroke="#334155" strokeWidth={1} strokeDasharray="4 4" />
-					<text x={CQ_X} y={52} textAnchor="middle" fontFamily={MONO} fontSize={9} fill="#64748b">CQ</text>
+					{/* CQ rail: fades out when idle so it isn't visual noise.
+					    Layout is stable (fixed viewBox) either way. */}
+					<motion.g
+						initial={false}
+						animate={{ opacity: completionActive ? 1 : 0 }}
+						transition={{ duration: 0.3 }}
+					>
+						<line x1={CQ_X} y1={STATION_CY[0]} x2={CQ_X} y2={STATION_CY[STATION_CY.length - 1]} stroke="#334155" strokeWidth={1} strokeDasharray="4 4" />
+						<text x={CQ_X} y={52} textAnchor="middle" fontFamily={MONO} fontSize={9} fill="#64748b">CQ</text>
+					</motion.g>
 					{PIPELINE_LANES.map((lane, i) => {
 						const active = laneActive[i];
 						const cy = STATION_CY[i];

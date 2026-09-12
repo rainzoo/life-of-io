@@ -94,15 +94,6 @@ export function Tag({
 	);
 }
 
-/** Small stage annotation under a row. */
-export function Stage({ x, y, text }: { x: number; y: number; text: string }) {
-	return (
-		<text x={x} y={y} fontFamily={MONO} fontSize={10.5} fill="#64748b">
-			{text}
-		</text>
-	);
-}
-
 /** Frame every hero scene returns: large SVG + staged caption. */
 export function HeroFrame({ label, caption, children }: { label: string; caption: string; children: ReactNode }) {
 	return (

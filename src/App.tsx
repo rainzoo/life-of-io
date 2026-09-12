@@ -6,8 +6,9 @@ import { LatencyWaterfall } from "@/components/viz/LatencyWaterfall";
 import { PhaseRail } from "@/components/viz/PhaseRail";
 import { DurabilityBadge } from "@/components/viz/PipelineCanvas";
 import { PipelineCanvas } from "@/components/viz/PipelineCanvas";
-import { StepInspector, renderInlineCode } from "@/components/viz/StepInspector";
-import { SCENE_DWELL_MS, sceneForSlug } from "@/components/viz/scenes/hero";
+import { StepInspector } from "@/components/viz/StepInspector";
+import { renderInlineCode } from "@/lib/inline-code";
+import { SCENE_DWELL_MS, sceneForSlug } from "@/components/viz/scenes/hero/scene-map";
 import { META, SCENARIOS, stepsForScenario } from "@/content/load";
 import { PHASE_LABELS } from "@/content/theme";
 
@@ -47,6 +48,7 @@ function App() {
 	const [isPlaying, setIsPlaying] = useState<boolean>(initialState.play);
 	const [speed, setSpeed] = useState<number>(initialState.speed);
 	const shouldReduceMotion = useReducedMotion();
+	const reduceMotion = shouldReduceMotion ?? false;
 
 	const maxIndex = steps.length - 1;
 	const currentStep = steps[currentStepIndex] ?? steps[0];
@@ -151,11 +153,11 @@ function App() {
 							</p>
 						</div>
 						<LatencyWaterfall steps={steps} index={currentStepIndex} onSelect={handleScrub} />
-						<PipelineCanvas activeLayers={new Set(currentStep.layers)} slug={currentStep.slug} reduceMotion={shouldReduceMotion ?? false} />
+						<PipelineCanvas activeLayers={new Set(currentStep.layers)} slug={currentStep.slug} reduceMotion={reduceMotion} />
 					</section>
 
 					<section aria-label="Step" className="min-w-0">
-						<StepInspector step={currentStep} index={currentStepIndex} total={steps.length} reduceMotion={shouldReduceMotion ?? false} />
+						<StepInspector step={currentStep} index={currentStepIndex} total={steps.length} reduceMotion={reduceMotion} />
 					</section>
 				</main>
 

@@ -1,25 +1,9 @@
 import { motion } from "motion/react";
 import { CircuitBoard, Cpu } from "lucide-react";
 import { memo, useState } from "react";
-import type { ReactNode } from "react";
 import type { VisualizationStep } from "@/content/schema";
+import { renderInlineCode } from "@/lib/inline-code";
 import { PhaseBadge } from "./PhaseBadge";
-
-export function renderInlineCode(text: string): ReactNode[] {
-	return text.split(/(`[^`]+`)/g).map((part, i) => {
-		if (part.startsWith("`") && part.endsWith("`") && part.length > 2) {
-			return (
-				<code
-					key={i}
-					className="rounded border border-slate-600/60 bg-slate-800/80 px-1 py-px font-mono text-[0.85em] text-cyan-200"
-				>
-					{part.slice(1, -1)}
-				</code>
-			);
-		}
-		return <span key={i}>{part}</span>;
-	});
-}
 
 interface StepInspectorProps {
 	step: VisualizationStep;

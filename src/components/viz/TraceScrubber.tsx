@@ -15,15 +15,10 @@ const MARKERS: Record<string, { label: string; cls: string }> = {
 	"direct-completion": { label: "CQ", cls: "bg-emerald-400" },
 };
 
-const LEGEND: { label: string; cls: string }[] = [
-	{ label: "COMMIT", cls: "bg-yellow-300" },
-	{ label: "CQ", cls: "bg-emerald-400" },
-	{ label: "clean", cls: "bg-sky-400" },
-	{ label: "durable", cls: "bg-emerald-300" },
-	{ label: "TRIM", cls: "bg-slate-400" },
-	{ label: "READ", cls: "bg-cyan-300" },
-	{ label: "hit", cls: "bg-teal-300" },
-];
+// Legend derives from MARKERS so colors/labels can't drift apart.
+const LEGEND: { label: string; cls: string }[] = Array.from(
+	new Map(Object.values(MARKERS).map((m) => [m.label, m])).values(),
+);
 
 interface TraceScrubberProps {
 	steps: VisualizationStep[];

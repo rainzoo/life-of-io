@@ -1,4 +1,4 @@
-import { HG, HeroFrame, Stage, Tag, DrawLine } from "./hero";
+import { HG, HeroFrame, Tag, DrawLine } from "./hero";
 import type { HeroSceneProps } from "./hero";
 
 /** Hero 6: NVMe submission queue + doorbell; completion returns up the CQ rail. */
@@ -26,12 +26,10 @@ export function HeroNvme({ slug, reduceMotion }: HeroSceneProps) {
 					</text>
 				</HG>
 			))}
-			<Stage x={24} y={178} text="01 · fill SQ slots (LBA + PRP/SGL)" />
 			<DrawLine reduceMotion={reduceMotion} x1={200} y1={196} x2={200} y2={226} stroke="#fbbf24" w={2} delay={0.55} />
 			<HG reduceMotion={reduceMotion} d={0.65}>
 				<Tag x={110} y={234} w={180} h={56} label="doorbell (MMIO)" fill="rgba(251,191,36,0.12)" stroke="#fbbf24" color="#fde68a" />
 			</HG>
-			<Stage x={24} y={314} text="02 · ring doorbell → 03 · controller fetches" />
 			{completion && (
 				<HG reduceMotion={reduceMotion} d={0.9}>
 					<Tag x={110} y={330} w={180} h={52} fsize={11} label="CQ entry ↑ irq wakes waiter" fill="rgba(52,211,153,0.12)" stroke="#34d399" color="#a7f3d0" />

@@ -1,5 +1,5 @@
 import { motion } from "motion/react";
-import { DrawLine, HG, HeroFrame, Stage, Tag } from "./hero";
+import { DrawLine, HG, HeroFrame, Tag } from "./hero";
 import type { HeroSceneProps } from "./hero";
 
 const HIT = new Set(["read-cache-hit", "mmap-access"]);
@@ -20,12 +20,10 @@ export function HeroReadPath({ slug, reduceMotion }: HeroSceneProps) {
 					<polygon points="248,76 260,82 248,88" fill="#22d3ee" />
 					<Tag x={264} y={52} w={112} h={60} fsize={11} label="pinned buf" fill="rgba(34,211,238,0.12)" stroke="#22d3ee" color="#a5f3fc" />
 				</HG>
-				<Stage x={24} y={136} text="01 · align + pin (mlock-like)" />
 				<line x1={24} y1={180} x2={376} y2={180} stroke="#1e293b" strokeWidth={1} />
 				<HG reduceMotion={reduceMotion} d={0.7}>
 					<Tag x={24} y={202} w={352} h={60} label="DMA userspace ⇄ device" fill="none" stroke="#22d3ee" color="#a5f3fc" />
 				</HG>
-				<Stage x={24} y={286} text="02 · no folio, no copy, no cache pollution" />
 				<HG reduceMotion={reduceMotion} d={0.9}>
 					<Tag x={24} y={308} w={352} h={52} fsize={11} label="tradeoff: app manages alignment + size" fill="none" stroke="#334155" color="#64748b" />
 				</HG>
@@ -40,13 +38,11 @@ export function HeroReadPath({ slug, reduceMotion }: HeroSceneProps) {
 						<rect x={24 + i * 62} y={52} width={54} height={92} rx={6} fill="rgba(14,165,233,0.65)" stroke="#38bdf8" strokeWidth={1.4} />
 					</HG>
 				))}
-				<Stage x={24} y={168} text="01 · up-to-date folios in DRAM" />
 				<DrawLine reduceMotion={reduceMotion} x1={200} y1={196} x2={200} y2={226} stroke="#475569" w={2} dash="6 5" delay={0.5} />
 				<HG reduceMotion={reduceMotion} d={0.6}>
 					<text x={200} y={252} textAnchor="middle" fontFamily="JetBrains Mono, monospace" fontSize={16} fill="#f87171">✕</text>
 					<Tag x={80} y={266} w={240} h={60} label="STOP — no device I/O" fill="rgba(52,211,153,0.1)" stroke="#34d399" color="#a7f3d0" />
 				</HG>
-				<Stage x={24} y={350} text="02 · ~100 ns serve, 0 device traffic" />
 			</HeroFrame>
 		);
 	}
@@ -56,7 +52,6 @@ export function HeroReadPath({ slug, reduceMotion }: HeroSceneProps) {
 				{[0, 1, 2, 3, 4].map((i) => (
 					<rect key={i} x={24 + i * 56} y={52} width={48} height={88} rx={6} fill="none" stroke="#64748b" strokeWidth={1.4} strokeDasharray="7 5" opacity={0.7} />
 				))}
-				<Stage x={24} y={164} text="01 · empty — nothing cached" />
 				<DrawLine reduceMotion={reduceMotion} x1={200} y1={186} x2={200} y2={300} stroke="#fbbf24" w={2} delay={0.3} />
 				<polygon points="194,300 206,300 200,312" fill="#fbbf24" />
 				{!reduceMotion && (
@@ -86,7 +81,6 @@ export function HeroReadPath({ slug, reduceMotion }: HeroSceneProps) {
 				<polygon points="218,92 230,98 218,104" fill="#38bdf8" />
 				<Tag x={234} y={68} w={fault ? 142 : 120} h={60} fsize={11} label={fault ? "mapped" : "userspace"} fill="rgba(30,41,59,0.9)" stroke="#64748b" color="#e2e8f0" />
 			</HG>
-			<Stage x={24} y={168} text={fault ? "01 · MMU fault wires the folio" : "01 · copy bytes out"} />
 			<line x1={24} y1={188} x2={376} y2={188} stroke="#1e293b" strokeWidth={1} />
 			<HG reduceMotion={reduceMotion} d={0.75}>
 				<Tag x={24} y={210} w={352} h={60} label={fault ? "zero-copy: CPU reads DRAM directly" : "folios stay clean — no writeback"} fill="none" stroke="#334155" color="#94a3b8" />

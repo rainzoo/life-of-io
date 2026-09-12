@@ -1,4 +1,4 @@
-import { DrawLine, HG, HeroFrame, Stage, Tag } from "./hero";
+import { DrawLine, HG, HeroFrame, Tag } from "./hero";
 import type { HeroSceneProps } from "./hero";
 
 /** Hero 1: syscall trap + dentry walk, staged in three rows. */
@@ -28,7 +28,6 @@ export function HeroTrapPath({ slug, reduceMotion }: HeroSceneProps) {
 				<polygon points="168,64 180,70 168,76" fill="#22d3ee" />
 				<Tag x={184} y={42} w={110} h={56} label="ring 0" fill="rgba(34,211,238,0.12)" stroke="#22d3ee" color="#a5f3fc" />
 			</HG>
-			<Stage x={24} y={122} text="01 · syscall trap" />
 			<line x1={24} y1={140} x2={376} y2={140} stroke="#1e293b" strokeWidth={1} />
 			{nodes.map((n, i) => {
 				const lastNegative = negative && i === nodes.length - 1;
@@ -44,12 +43,10 @@ export function HeroTrapPath({ slug, reduceMotion }: HeroSceneProps) {
 					</HG>
 				);
 			})}
-			<Stage x={24} y={242} text="02 · link_path_walk" />
 			<line x1={24} y1={260} x2={376} y2={260} stroke="#1e293b" strokeWidth={1} />
 			<HG reduceMotion={reduceMotion} d={0.85}>
 				<Tag x={24} y={282} w={330} h={56} label={outcome.t} fill={outcome.fill} stroke={outcome.stroke} color={outcome.color} dash={outcome.dash} />
 			</HG>
-			<Stage x={24} y={362} text="03 · outcome" />
 		</HeroFrame>
 	);
 }

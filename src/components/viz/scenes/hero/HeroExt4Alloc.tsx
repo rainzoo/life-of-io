@@ -1,4 +1,4 @@
-import { HG, HeroFrame, Stage, Tag } from "./hero";
+import { HG, HeroFrame, Tag } from "./hero";
 import type { HeroSceneProps } from "./hero";
 
 /** Hero 2: ext4 allocation — extent fill + dirent append. */
@@ -21,12 +21,10 @@ export function HeroExt4Alloc({ slug, reduceMotion }: HeroSceneProps) {
 					)}
 				</HG>
 			))}
-			<Stage x={24} y={152} text="01 · reserve blocks in extent" />
 			<line x1={24} y1={170} x2={376} y2={170} stroke="#1e293b" strokeWidth={1} />
 			<HG reduceMotion={reduceMotion} d={0.5}>
 				<Tag x={24} y={192} w={330} h={60} label={isDirent ? "dirent   file.txt → ino" : "extent   LBA range mapped"} fill="rgba(251,146,60,0.12)" stroke="#fdba74" color="#fed7aa" />
 			</HG>
-			<Stage x={24} y={276} text="02 · in-memory map update" />
 			<line x1={24} y1={294} x2={376} y2={294} stroke="#1e293b" strokeWidth={1} />
 			<HG reduceMotion={reduceMotion} d={0.8}>
 				<Tag x={24} y={316} w={330} h={56} label="NOT durable — needs journal COMMIT" fill="none" stroke="#475569" color="#64748b" dash="6 4" />
