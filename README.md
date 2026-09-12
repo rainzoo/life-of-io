@@ -1,35 +1,50 @@
 # Life of IO
 
-Visualize the life of a single I/O operation in Linux: from file creation command to data persistence on disk. This interactive web application provides a step-by-step animation that reveals the complex interactions between user space, file systems, kernel subsystems, and SSD hardware, making low-level I/O operations accessible and understandable.
+Visualize the life of a single I/O operation in Linux: from file command to data persistence on disk. This interactive web application provides step-by-step animations that reveal the complex interactions between user space, file systems, kernel subsystems, and SSD hardware, making low-level I/O operations accessible and understandable.
 
 ## 🚀 Features
 
-*   **Interactive Timeline:** Navigate through 34+ steps of I/O operations with play/pause controls
-*   **Layer-by-layer Visualization:** See data flow across User Space, File System (ext4), Kernel subsystems, and NVMe/SSD hardware
+*   **Five scenarios:** Write path (`echo > file`, 20 steps), Read path (`cat`, 9 steps), Metadata only (`touch`, 3 steps), Memory map (`mmap`, 5 steps), Direct I/O (`O_DIRECT`, 5 steps)
+*   **Interactive Timeline:** Navigate steps with play/pause controls and per-scenario auto-play pacing
+*   **Layer-by-layer Visualization:** See data flow across User Space, File System (ext4), Kernel subsystems, and NVMe/SSD hardware, with animated per-lane state (folios, journal, bio merge, L2P map, NAND cells)
+*   **Latency Waterfall:** Order-of-magnitude per-step timings on a log scale — click any bar to jump
 *   **Playback Controls:** Play, pause, step forward/backward, restart, and speed adjustment (1x-3x)
 *   **Keyboard Navigation:** Arrow keys for prev/next, Space/Enter for play/pause, R for restart
 *   **Responsive Design:** Optimized layouts for desktop, tablet, and mobile devices
 *   **Detailed Metadata:** Kernel and hardware focus sections explain each step's technical details
-*   **Interactive Slider:** Jump directly to any step in the I/O path
-*   **Phase Overview:** Colored sections for Bash command, File creation, and Data persistence
+*   **Interactive Slider:** Jump directly to any step in the I/O path, with event markers (COMMIT, CQ, TRIM, …)
+*   **Phase Overview:** Colored sections for Command, File creation, Data persistence, and Data read
 *   **Collapsible Step Navigator:** Quick access to jump between visualization steps
 
 ## 🛠 Implementation
 
-- Built with React 18, TypeScript, and Suspense for optimized performance
+- Built with React 19, TypeScript, and Vite for fast development and production builds
 - Styled with Tailwind CSS and shadcn/ui component library
-- Smooth animations powered by Framer Motion with AnimatePresence
-- Fast development and production builds with Vite
+- Smooth animations powered by Framer Motion (gated by `prefers-reduced-motion`)
 - Static deployment ready with SPA routing support
 
 ## 📊 Data Structure
 
-The visualization is structured in three main phases with detailed step-by-step progression:
+The visualization is structured in scenarios, each with its own step sequence.
+Labels restart at "1" per scenario; slugs are globally unique for deep links
+(`?scenario=read&step=2`).
+
+### Scenarios
+
+| Scenario | Command | Steps | Persistence |
+|----------|---------|-------|-------------|
+| Write path | `echo "Hello" > file.txt` | 20 | Yes (durability badge) |
+| Read path | `cat file.txt` | 9 | No |
+| Metadata only | `touch file.txt` | 3 | Yes |
+| Memory map | `./reader` (mmap) | 5 | No |
+| Direct I/O | `./direct_reader` (O_DIRECT) | 5 | No |
 
 ### Phases
-1. **Bash** (Steps 0.1–0.6): User space command execution
-2. **Creation** (Steps 1–15): File creation and metadata operations
-3. **Write & Persist** (Steps 16–34): Data writing and persistence
+
+1. **Bash** (Command): User space command execution
+2. **Creation** (File Creation): File creation and metadata operations
+3. **Write** (Data Write & Persistence): Data writing and persistence
+4. **Read** (Data Read): Opens, cache lookup, readahead, and copy-out
 
 ### Layers Overview
 The I/O path spans multiple system layers:
@@ -86,21 +101,41 @@ npm run build
 ## 🏗 Project Structure
 
 ```
+content/                         # Source of truth — pure Markdown, edit these
+├── README.md                    # Authoring guide + rules
+├── _meta.md                     # Document title, filesystem, device, intro
+├── _scenarios.md                # Scenario table (id, label, command, persistent, blurb)
+├── _phases.md                   # Phase table (id, label, blurb)
+├── _layers.md                   # Layer table (id, name, description)
+└── steps/                       # One Markdown file per step, filename-ordered
+    ├── 01-command-execution.md
+    └── …                         # frontmatter (slug, label, scenario, phase,
+                                    # title, layers, latency_ns, …)
+                                    # + body, `## Kernel`, `## Device`
+
 src/
-├── App.tsx                    # Main application with state management and controls
+├── App.tsx                    # State, keyboard nav, playback, layout
 ├── main.tsx                   # React application entry point
 ├── index.css                  # Tailwind CSS styles and theme variables
-├── assets/                    # Static assets (favicon, images)
+├── content/
+│   ├── schema.ts              # Canonical types (PhaseId, LayerId, Step, …)
+│   ├── theme.ts               # Design mapping — labels, classes, pipeline lanes
+│   └── load.ts                # Parses + validates Markdown at build time
+│                               # (per-scenario ordering, latency, scenarios)
 ├── components/
 │   ├── ui/                    # shadcn/ui component library re-exports
 │   └── viz/                   # Custom visualization components
-│       ├── LayerLane.tsx      # Individual layer components with icons
-│       └── PhaseBadge.tsx     # Phase indicator badges
-├── data/
-│   └── visualization-data.json  # Complete I/O step definitions and metadata
+│       ├── PhaseBadge.tsx     # Phase indicator badges
+│       ├── PhaseRail.tsx      # Phase navigation rail (per-scenario phases)
+│       ├── PipelineStack.tsx  # Request-travels-through cross-section + durability
+│       ├── LatencyWaterfall.tsx # Log-scale per-step latency strip
+│       ├── StepInspector.tsx  # Current step details (Kernel/Device tabs)
+│       └── TraceScrubber.tsx  # Step scrubber with event markers
 ├── lib/
 │   └── utils.ts               # Utility functions
-└── types/                     # TypeScript type definitions
+
+scripts/
+└── content-check.mjs          # Validates content/ (`npm run content:check`)
 
 public/
 ├── _redirects                 # SPA routing configuration for static hosting
