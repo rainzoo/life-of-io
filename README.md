@@ -4,7 +4,7 @@ Visualize the life of a single I/O operation in Linux: from file command to data
 
 ## 🚀 Features
 
-*   **Five scenarios:** Write path (`echo > file`, 20 steps), Read path (`cat`, 9 steps), Metadata only (`touch`, 3 steps), Memory map (`mmap`, 5 steps), Direct I/O (`O_DIRECT`, 5 steps)
+*   **Five scenarios:** Write path (`echo > file`, 20 steps), Read path (`cat`, 9 steps), Metadata only (`touch`, 3 steps), Memory map (`grep`, 5 steps), Direct I/O (`dd iflag=direct`, 5 steps)
 *   **Interactive Timeline:** Navigate steps with play/pause controls and per-scenario auto-play pacing
 *   **Layer-by-layer Visualization:** See data flow across User Space, File System (ext4), Kernel subsystems, and NVMe/SSD hardware, with animated per-lane state (folios, journal, bio merge, L2P map, NAND cells)
 *   **Latency Waterfall:** Order-of-magnitude per-step timings on a log scale — click any bar to jump
@@ -36,8 +36,8 @@ Labels restart at "1" per scenario; slugs are globally unique for deep links
 | Write path | `echo "Hello" > file.txt` | 20 | Yes (durability badge) |
 | Read path | `cat file.txt` | 9 | No |
 | Metadata only | `touch file.txt` | 3 | Yes |
-| Memory map | `./reader` (mmap) | 5 | No |
-| Direct I/O | `./direct_reader` (O_DIRECT) | 5 | No |
+| Memory map | `grep "Hello" file.txt` | 5 | No |
+| Direct I/O | `dd if=file.txt of=/dev/null iflag=direct` | 5 | No |
 
 ### Phases
 

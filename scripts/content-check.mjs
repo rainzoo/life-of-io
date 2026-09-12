@@ -120,8 +120,49 @@ for (const f of files) {
 	}
 }
 
-for (const name of ["_meta.md", "_phases.md", "_layers.md"]) {
+for (const name of ["_meta.md", "_phases.md", "_layers.md", "_terms.md", "_outros.md"]) {
 	if (!existsSync(join(contentDir, name))) errors.push(`content/${name} missing`);
+}
+
+// Glossary: non-empty unique terms with one-line blurbs.
+function tableRows(path) {
+	const rows = [];
+	if (!existsSync(path)) return rows;
+	for (const line of readFileSync(path, "utf8").split("\n")) {
+		const t = line.trim();
+		if (!t.startsWith("|")) continue;
+		const cols = t.split("|").slice(1, -1).map((c) => c.trim());
+		if (!cols.length || /^id$/i.test(cols[0])) continue;
+		if (/^:?-+:?$/.test(cols[0].replace(/\s/g, ""))) continue;
+		rows.push(cols);
+	}
+	return rows;
+}
+{
+	const seen = new Set();
+	for (const [term, blurb] of tableRows(join(contentDir, "_terms.md"))) {
+		if ((term ?? "").toLowerCase() === "term") continue;
+		if (!term) errors.push("content/_terms.md: term missing term");
+		if (!blurb) errors.push(`content/_terms.md: term "${term}" missing blurb`);
+		const key = (term ?? "").toLowerCase();
+		if (seen.has(key)) errors.push(`content/_terms.md: duplicate term "${term}"`);
+		seen.add(key);
+	}
+	if (seen.size === 0) errors.push("content/_terms.md: no terms found");
+}
+// Outros: exactly one complete row per scenario.
+{
+	const seen = new Set();
+	for (const [scenario, title, outcome, guarantee] of tableRows(join(contentDir, "_outros.md"))) {
+		if ((scenario ?? "").toLowerCase() === "scenario") continue;
+		if (!SCENARIOS.has(scenario)) errors.push(`content/_outros.md: unknown scenario "${scenario}"`);
+		if (!title || !outcome || !guarantee) errors.push(`content/_outros.md: outro "${scenario}" missing title/outcome/guarantee`);
+		if (seen.has(scenario)) errors.push(`content/_outros.md: duplicate outro "${scenario}"`);
+		seen.add(scenario);
+	}
+	for (const id of SCENARIOS) {
+		if (!seen.has(id)) errors.push(`content/_outros.md: scenario "${id}" missing outro`);
+	}
 }
 
 if (errors.length > 0) {

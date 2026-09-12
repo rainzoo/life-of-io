@@ -35,6 +35,18 @@ export interface LayerDefinition {
 	description: string;
 }
 
+export interface TermDefinition {
+	term: string;
+	blurb: string;
+}
+
+export interface OutroDefinition {
+	scenario: string;
+	title: string;
+	outcome: string;
+	guarantee: string;
+}
+
 export interface VisualizationStep {
 	/** Stable id for deep links, derived from filename slug. */
 	slug: string;
@@ -74,4 +86,6 @@ export interface ContentBundle {
 	scenarios: ScenarioDefinition[];
 	layers: LayerDefinition[];
 	steps: VisualizationStep[];
+	terms: TermDefinition[];
+	outros: OutroDefinition[];
 }

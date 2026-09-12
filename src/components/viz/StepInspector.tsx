@@ -1,8 +1,8 @@
 import { motion } from "motion/react";
 import { CircuitBoard, Cpu } from "lucide-react";
-import { memo, useState } from "react";
+import { memo, useMemo, useState } from "react";
 import type { VisualizationStep } from "@/content/schema";
-import { renderInlineCode } from "@/lib/inline-code";
+import { renderInlineCode, termsInText } from "@/lib/inline-code";
 import { PhaseBadge } from "./PhaseBadge";
 
 interface StepInspectorProps {
@@ -27,6 +27,10 @@ export const StepInspector = memo(function StepInspector({
 }: StepInspectorProps) {
 	const [tab, setTab] = useState<Tab>("kernel");
 	const body = tab === "kernel" ? step.kernel : step.device;
+	const terms = useMemo(
+		() => termsInText(step.description, step.kernel, step.device, step.simple),
+		[step],
+	);
 	return (
 		<motion.div
 			key={step.slug}
@@ -81,6 +85,19 @@ export const StepInspector = memo(function StepInspector({
 				>
 					{renderInlineCode(body)}
 				</motion.p>
+				{terms.length > 0 && (
+					<div className="mt-3 rounded-lg border border-slate-700/60 bg-slate-950/60 px-2.5 py-2">
+						<p className="f-eyebrow text-slate-500">Terms in this step</p>
+						<dl className="mt-1.5 space-y-1.5">
+							{terms.map((t) => (
+								<div key={t.term} className="text-[0.8rem] leading-snug">
+									<dt className="inline font-mono text-[0.72rem] text-cyan-200">{t.term}</dt>
+									<dd className="inline text-slate-400"> — {t.blurb}</dd>
+								</div>
+							))}
+						</dl>
+					</div>
+				)}
 				<div className="mt-3 flex flex-wrap gap-1.5">
 					{step.layers.map((id) => (
 						<span

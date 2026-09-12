@@ -6,11 +6,11 @@ phase: bash
 title: Map Command
 layers: [bash]
 keyConcept: argv
-simple: `./reader` tokenizes to argument vector (argv); mapping starts after open.
+simple: `grep "Hello" file.txt` tokenizes to argv; GNU grep mmaps regular files instead of reading.
 latency_ns: 300000
 ---
 
-`./reader file.txt` tokenizes to argument vector (argv) plus a filename operand. The process opens the file read-only, then maps it instead of issuing `read()` calls.
+`grep "Hello" file.txt` tokenizes to argument vector (argv) plus a pattern and a filename operand. GNU grep memory-maps regular-file input, so bytes arrive via page faults instead of `read()` calls.
 
 ## Kernel
 

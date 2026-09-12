@@ -6,10 +6,11 @@ import { LatencyWaterfall } from "@/components/viz/LatencyWaterfall";
 import { PhaseRail } from "@/components/viz/PhaseRail";
 import { DurabilityBadge } from "@/components/viz/PipelineCanvas";
 import { PipelineCanvas } from "@/components/viz/PipelineCanvas";
+import { OutroBanner } from "@/components/viz/OutroBanner";
 import { StepInspector } from "@/components/viz/StepInspector";
 import { renderInlineCode } from "@/lib/inline-code";
 import { SCENE_DWELL_MS, sceneForSlug } from "@/components/viz/scenes/hero/scene-map";
-import { META, SCENARIOS, stepsForScenario } from "@/content/load";
+import { META, SCENARIOS, outroForScenario, stepsForScenario } from "@/content/load";
 import { PHASE_LABELS } from "@/content/theme";
 
 const DEFAULT_SCENARIO = "write";
@@ -110,15 +111,12 @@ function App() {
 	return (
 		<TooltipProvider>
 			<div className="flex min-h-screen flex-col bg-slate-950 text-foreground">
-				<header className="flex items-center justify-between gap-3 border-b border-border/60 px-4 py-2.5 md:px-6">
-					<div className="min-w-0">
-						<h1 className="f-title px-2 text-slate-50">Life of IO</h1>
-						<p className="f-mono text-slate-400">{scenario.command} · {META.filesystem} · {META.device}</p>
-						<p className="f-body mt-1 max-w-[72ch] text-slate-500">{META.intro}</p>
-					</div>
-					{scenario.persistent && (
-						<DurabilityBadge scenario={scenarioId} slug={currentStep.slug} order={currentStep.order} />
-					)}
+			<header className="border-b border-border/60 px-4 py-2.5 md:px-6">
+				<div className="min-w-0">
+					<h1 className="f-title px-2 text-slate-50">Life of IO</h1>
+					<p className="f-mono text-slate-400">{scenario.command} · {META.filesystem} · {META.device}</p>
+					<p className="f-body mt-1 max-w-[72ch] text-slate-500">{META.intro}</p>
+				</div>
 				</header>
 
 				<main className="mx-auto w-full max-w-[1720px] flex-1 grid grid-cols-1 gap-5 px-4 py-4 md:px-6 lg:grid-cols-[240px_minmax(0,1fr)_minmax(0,400px)]">
@@ -132,20 +130,30 @@ function App() {
 									type="button"
 									role="tab"
 									aria-selected={s.id === scenarioId}
-									title={s.blurb}
+									title={`${s.command} — ${s.blurb}`}
 									onClick={() => handleScenario(s.id)}
-									className={`rounded-full border px-3 py-1 text-[0.75rem] font-medium transition-colors ${
+									className={`rounded-full border px-3 py-1 text-left transition-colors ${
 										s.id === scenarioId
 											? "border-slate-400 bg-slate-700 text-slate-100"
 											: "border-slate-700/60 bg-slate-900/60 text-slate-400 hover:bg-slate-800/60 hover:text-slate-200"
 									}`}
 								>
-									{s.label}
+									<span className="flex flex-col leading-tight">
+										<span className="text-[0.75rem] font-medium">{s.label}</span>
+										<span className={`f-mono max-w-[240px] truncate font-normal ${
+											s.id === scenarioId ? "text-slate-300" : "text-slate-500"
+										}`}>{s.command}</span>
+									</span>
 								</button>
 							))}
 						</div>
-						<div className="rounded-xl border border-border/70 bg-slate-900/60 p-3.5">
+					<div className="rounded-xl border border-border/70 bg-slate-900/60 p-3.5">
+						<div className="flex items-center justify-between gap-3">
 							<p className="f-eyebrow text-slate-500">{PHASE_LABELS[currentStep.phase]} · Step {currentStep.label} of {steps.length}</p>
+							{scenario.persistent && (
+								<DurabilityBadge scenario={scenarioId} slug={currentStep.slug} order={currentStep.order} />
+							)}
+						</div>
 							<h2 className="f-title mt-1 text-slate-50">{currentStep.title}</h2>
 							<p className="f-body mt-2 text-slate-200">
 								<span className="mr-2 rounded border border-slate-600/60 bg-slate-800/80 px-1.5 py-0.5 font-mono text-[0.7rem] text-cyan-200">{currentStep.keyConcept}</span>
@@ -154,6 +162,9 @@ function App() {
 						</div>
 						<LatencyWaterfall steps={steps} index={currentStepIndex} onSelect={handleScrub} />
 						<PipelineCanvas activeLayers={new Set(currentStep.layers)} slug={currentStep.slug} reduceMotion={reduceMotion} />
+						{currentStepIndex === maxIndex && (
+							<OutroBanner outro={outroForScenario(scenarioId)} reduceMotion={reduceMotion} onReplay={handlePlayPause} />
+						)}
 					</section>
 
 					<section aria-label="Step" className="min-w-0">

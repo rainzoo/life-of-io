@@ -15,11 +15,6 @@ const MARKERS: Record<string, { label: string; cls: string }> = {
 	"direct-completion": { label: "CQ", cls: "bg-emerald-400" },
 };
 
-// Legend derives from MARKERS so colors/labels can't drift apart.
-const LEGEND: { label: string; cls: string }[] = Array.from(
-	new Map(Object.values(MARKERS).map((m) => [m.label, m])).values(),
-);
-
 interface TraceScrubberProps {
 	steps: VisualizationStep[];
 	index: number;
@@ -31,6 +26,7 @@ export const TraceScrubber = memo(function TraceScrubber({
 	index,
 	onChange,
 }: TraceScrubberProps) {
+	const currentMarker = MARKERS[steps[index].slug];
 	return (
 		<div className="space-y-1.5">
 			<div className="relative">
@@ -68,13 +64,11 @@ export const TraceScrubber = memo(function TraceScrubber({
 						{steps[index].label} · {index + 1}/{steps.length}
 					</span>
 					<span className="truncate text-slate-500">{steps[index].slug}</span>
-				</span>
-				<span className="hidden shrink-0 gap-2 whitespace-nowrap md:flex" aria-label="Timeline markers legend">
-					{LEGEND.map((entry) => (
-						<span key={entry.label} className="inline-flex items-center gap-1">
-							<span className={`h-1.5 w-1.5 rounded-full ${entry.cls}`} aria-hidden="true" /> {entry.label}
+					{currentMarker && (
+						<span className={`shrink-0 rounded border border-slate-600/60 bg-slate-800/80 px-1.5 py-px uppercase tracking-wide text-slate-200`}>
+							{currentMarker.label}
 						</span>
-					))}
+					)}
 				</span>
 			</div>
 		</div>

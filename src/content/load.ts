@@ -5,9 +5,11 @@ import type {
 	ContentBundle,
 	LayerDefinition,
 	LayerId,
+	OutroDefinition,
 	PhaseDefinition,
 	PhaseId,
 	ScenarioDefinition,
+	TermDefinition,
 	VisualizationStep,
 } from "./schema";
 
@@ -33,6 +35,16 @@ const scenariosModule = import.meta.glob(
 
 const layersModule = import.meta.glob(
 	"../../content/_layers.md",
+	{ eager: true, query: "?raw", import: "default" },
+) as Record<string, string>;
+
+const termsModule = import.meta.glob(
+	"../../content/_terms.md",
+	{ eager: true, query: "?raw", import: "default" },
+) as Record<string, string>;
+
+const outrosModule = import.meta.glob(
+	"../../content/_outros.md",
 	{ eager: true, query: "?raw", import: "default" },
 ) as Record<string, string>;
 
@@ -236,6 +248,32 @@ function parseScenarios(raw: string): ScenarioDefinition[] {
 	return scenarios;
 }
 
+function parseTerms(raw: string): TermDefinition[] {
+	const terms: TermDefinition[] = parseTableRows(raw)
+		.filter(([term]) => (term ?? "").toLowerCase() !== "term")
+		.map(([term, blurb]) => ({ term: term ?? "", blurb: blurb ?? "" }));
+	const seen = new Set<string>();
+	for (const t of terms) {
+		if (!t.term) throw new Error("[content] term missing term");
+		if (!t.blurb) throw new Error(`[content] term "${t.term}" missing blurb`);
+		const key = t.term.toLowerCase();
+		if (seen.has(key)) throw new Error(`[content] duplicate term "${t.term}"`);
+		seen.add(key);
+	}
+	return terms;
+}
+
+function parseOutros(raw: string): OutroDefinition[] {
+	return parseTableRows(raw)
+		.filter(([scenario]) => (scenario ?? "").toLowerCase() !== "scenario")
+		.map(([scenario, title, outcome, guarantee]) => ({
+			scenario: scenario ?? "",
+			title: title ?? "",
+			outcome: outcome ?? "",
+			guarantee: guarantee ?? "",
+		}));
+}
+
 function parseStep(
 	path: string,
 	raw: string,
@@ -288,6 +326,8 @@ function buildBundle(): ContentBundle {
 	const phases = parsePhases(singleFile(phasesModule, "_phases.md"));
 	const scenarios = parseScenarios(singleFile(scenariosModule, "_scenarios.md"));
 	const layers = parseLayers(singleFile(layersModule, "_layers.md"));
+	const terms = parseTerms(singleFile(termsModule, "_terms.md"));
+	const outros = parseOutros(singleFile(outrosModule, "_outros.md"));
 	const scenarioIds = new Set(scenarios.map((s) => s.id));
 	const paths = Object.keys(stepModules).sort();
 	const parsed = paths.map((p) => ({ path: p, step: parseStep(p, stepModules[p], -1, scenarioIds) }));
@@ -322,12 +362,29 @@ function buildBundle(): ContentBundle {
 			}
 		}
 	}
-	return { meta, phases, scenarios, layers, steps };
+	const seenOutros = new Set<string>();
+	for (const o of outros) {
+		if (!o.scenario) throw new Error("[content] outro missing scenario");
+		if (!scenarioIds.has(o.scenario)) throw new Error(`[content] outro unknown scenario "${o.scenario}"`);
+		if (!o.title || !o.outcome || !o.guarantee) throw new Error(`[content] outro "${o.scenario}" missing title/outcome/guarantee`);
+		if (seenOutros.has(o.scenario)) throw new Error(`[content] duplicate outro "${o.scenario}"`);
+		seenOutros.add(o.scenario);
+	}
+	for (const id of scenarioIds) {
+		if (!seenOutros.has(id)) throw new Error(`[content] scenario "${id}" missing outro`);
+	}
+	return { meta, phases, scenarios, layers, steps, terms, outros };
 }
 
 const CONTENT: ContentBundle = buildBundle();
 export const META = CONTENT.meta;
 export const SCENARIOS = CONTENT.scenarios;
+export const TERMS = CONTENT.terms;
+export function outroForScenario(scenario: string): OutroDefinition {
+	const o = CONTENT.outros.find((x) => x.scenario === scenario);
+	if (!o) throw new Error(`[content] scenario "${scenario}" missing outro`);
+	return o;
+}
 export function stepsForScenario(scenario: string): VisualizationStep[] {
 	return CONTENT.steps.filter((s) => s.scenario === scenario);
 }

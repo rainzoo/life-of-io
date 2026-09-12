@@ -164,19 +164,11 @@ export const PipelineCanvas = memo(function PipelineCanvas({
 				</div>
 			</div>
 
-			{/* Static legend (replaces per-lane chips) */}
-			<div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-slate-700/60 px-1 pt-2 font-mono text-[0.65rem] text-slate-500">
-				{PIPELINE_LANES.map((lane, i) => (
-					<span key={lane.id} className="inline-flex items-center gap-1.5">
-						<span className="h-1.5 w-1.5 rounded-full" style={{ background: STATION_ACCENT[i] }} aria-hidden="true" />
-						{lane.name}
-					</span>
-				))}
-				<span className="ml-auto inline-flex items-center gap-3">
-					<span><span className="text-amber-300">amber</span> volatile</span>
-					<span><span className="text-emerald-300">green</span> durable</span>
-					<span><span className="text-yellow-200">yellow</span> COMMIT</span>
-				</span>
+			{/* Color key for scene semantics (station colors live on the stations). */}
+			<div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-slate-700/60 px-1 pt-2 font-mono text-[0.65rem] text-slate-500" aria-label="Color key">
+				<span><span className="text-amber-300">amber</span> volatile</span>
+				<span><span className="text-emerald-300">green</span> durable</span>
+				<span><span className="text-yellow-200">yellow</span> COMMIT</span>
 			</div>
 		</div>
 	);
