@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { Bot } from "lucide-react";
 
 interface SiteFooterProps {
 	/** Right-side slot, e.g. a link to the visualizer on the landing page. */
@@ -15,8 +16,8 @@ export function SiteFooter({ children, maxWidthClass = "max-w-[1120px]" }: SiteF
 	return (
 		<footer className="border-t border-border/60 px-4 py-4 md:px-6">
 			<div className={`mx-auto flex w-full ${maxWidthClass} flex-wrap items-center justify-between gap-2`}>
-				<p className="f-mono text-slate-500">
-					Built with ❤️ by{" "}
+				<p className="f-mono flex items-center gap-1.5 text-slate-500">
+					Built with <Bot size={14} className="text-slate-400" aria-hidden="true" /> AI by{" "}
 					<a
 						href="https://code.manas.me/"
 						target="_blank"
