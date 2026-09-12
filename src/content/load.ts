@@ -379,6 +379,7 @@ function buildBundle(): ContentBundle {
 const CONTENT: ContentBundle = buildBundle();
 export const META = CONTENT.meta;
 export const SCENARIOS = CONTENT.scenarios;
+export const LAYERS = CONTENT.layers;
 export const TERMS = CONTENT.terms;
 export function outroForScenario(scenario: string): OutroDefinition {
 	const o = CONTENT.outros.find((x) => x.scenario === scenario);
