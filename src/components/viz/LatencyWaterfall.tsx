@@ -2,7 +2,7 @@ import { motion } from "motion/react";
 import { memo } from "react";
 import type { VisualizationStep } from "@/content/schema";
 
-export function formatLatency(ns: number): string {
+function formatLatency(ns: number): string {
 	if (ns < 1000) return `${ns} ns`;
 	if (ns < 1000000) {
 		const v = ns / 1000;

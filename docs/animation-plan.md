@@ -34,7 +34,24 @@ Reference: OpenAI scaling-storage article used only for interaction language
 7. `ftl-nand`: L2P redraw + invalidate old PBA + page program fill.
 8. `read-path`: hit (stop at cache) / miss (full depth) / copy-out arrow / fault / bypass.
 
-Slug -> scene mapping lives in `src/components/viz/scenes/index.ts`.
+Slug -> scene mapping lives in `src/components/viz/scenes/hero/index.tsx`
+(`sceneForSlug` + `SCENE_DWELL_MS` autoplay holds).
+
+## Pacing (autoplay holds after content completes)
+
+- `SCENE_DWELL_MS` per scene at 1x (trap/ext4 3000, folio/read 3200,
+  bio-merge/nvme 3600, journal/ftl 3800): enter animations finish by ~1.5s,
+  the rest is hold time to read the staged caption.
+- `ANIM_FLOOR_MS = 1600` in `App.tsx`: `max(floor, dwell / speed)` so 3x
+  never cuts content mid-animation.
+
+## Persistence (same-scene steps don't replay)
+
+- Concept inset keyed by **scene**, not step: elements shown in an earlier step
+  stay mounted; only genuinely new elements (delta) run their entrance.
+- `Tag` fill/stroke/text glide via CSS 0.3s so focus recoloring cross-fades.
+- Station glow + spring packet already persist (`initial={false}`).
+- Full staggered entrance plays only on first mount and on scene change.
 
 ## Spine topology (fixed, never re-layouts)
 
@@ -49,3 +66,23 @@ plus permanent right completion rail. Packet = single spring-driven `motion.circ
 3. `App.tsx` (caption-only card), `ControlBar.tsx` (Replay at end + i/N),
    `LatencyWaterfall.tsx` (animated heights), `StepInspector.tsx` (motion/react import).
 4. `npm run content:check && npm run build`. Pilot on write path, scenes reuse for others.
+
+## Hero canvas (write-path pilot) — cards removed
+
+`src/components/viz/PipelineCanvas.tsx`: one fixed SVG (`viewBox 0 0 244 520`,
+left rail) + concept panel (hero scenes, `viewBox 0 0 400 400`).
+
+- Five stations at fixed cy (70/175/280/385/480), accent per lane
+  (emerald/cyan/orange/amber/red). Active = opacity 1 + glow; inactive 0.35.
+- Spring packet travels the spine; CQ dot returns up the permanent dashed rail.
+- `src/components/viz/scenes/hero/`: 8 rescaled scenes (`hero.tsx` helpers:
+  `HG` stagger wrapper, `DrawLine` pathLength connectors, `Tag` labeled boxes,
+  `Stage` row annotations, `HeroFrame` svg + staged caption). Mapping reuses
+  `sceneForSlug` from `src/components/viz/scenes/index.tsx`.
+- Layer chips dropped; static legend row under canvas
+  (amber volatile · green durable · yellow COMMIT). Layer detail stays in
+  StepInspector tags.
+- `App.tsx` rendered `PipelineCanvas` for `scenarioId === "write"`,
+  `PipelineStack` for all other scenarios. Rollout: DONE — canvas serves all
+  scenarios; `PipelineStack.tsx` and the small `scenes/` insets deleted.
+  Slug mapping + per-scene dwell live in `src/components/viz/scenes/hero/`.

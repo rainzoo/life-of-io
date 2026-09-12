@@ -4,30 +4,22 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { ControlBar } from "@/components/viz/ControlBar";
 import { LatencyWaterfall } from "@/components/viz/LatencyWaterfall";
 import { PhaseRail } from "@/components/viz/PhaseRail";
-import { DurabilityBadge, PipelineStack } from "@/components/viz/PipelineStack";
+import { DurabilityBadge } from "@/components/viz/PipelineCanvas";
+import { PipelineCanvas } from "@/components/viz/PipelineCanvas";
 import { StepInspector, renderInlineCode } from "@/components/viz/StepInspector";
+import { SCENE_DWELL_MS, sceneForSlug } from "@/components/viz/scenes/hero";
 import { META, SCENARIOS, stepsForScenario } from "@/content/load";
 import { PHASE_LABELS } from "@/content/theme";
 
 const DEFAULT_SCENARIO = "write";
 
-// Autoplay lingers on visual-heavy steps so animations can play out.
-const STEP_DWELL_MS: Record<string, number> = {
-	"journal-transaction": 2600,
-	"block-layer-processing": 2400,
-	"nvme-command-submission": 2400,
-	"ssd-processing": 2600,
-	"nand-programming": 2400,
-	"io-completion": 2400,
-	"metadata-commit": 2600,
-	"read-readahead": 2400,
-	"mmap-fault": 2400,
-	"direct-submit": 2000,
-	"touch-open": 2000,
-};
+// Autoplay dwell: each scene's enter animation completes by ~1.5s; the rest
+// is hold time so the staged caption can be read before advancing.
+// ANIM_FLOOR_MS guarantees content finishes even at 3x speed.
+const ANIM_FLOOR_MS = 1600;
 
-export function dwellForSlug(slug: string): number {
-	return STEP_DWELL_MS[slug] ?? 1600;
+function dwellForSlug(slug: string): number {
+	return SCENE_DWELL_MS[sceneForSlug(slug)] ?? 3000;
 }
 
 const getInitialAppState = () => {
@@ -90,7 +82,7 @@ function App() {
 
 	useEffect(() => {
 		if (isPlaying && currentStepIndex < maxIndex) {
-			const timer = setTimeout(() => handleNext(), dwellForSlug(currentStep.slug) / speed);
+			const timer = setTimeout(() => handleNext(), Math.max(ANIM_FLOOR_MS, dwellForSlug(currentStep.slug) / speed));
 			return () => clearTimeout(timer);
 		}
 	}, [currentStepIndex, handleNext, isPlaying, maxIndex, speed, currentStep.slug]);
@@ -159,7 +151,7 @@ function App() {
 							</p>
 						</div>
 						<LatencyWaterfall steps={steps} index={currentStepIndex} onSelect={handleScrub} />
-						<PipelineStack activeLayers={new Set(currentStep.layers)} slug={currentStep.slug} reduceMotion={shouldReduceMotion ?? false} />
+						<PipelineCanvas activeLayers={new Set(currentStep.layers)} slug={currentStep.slug} reduceMotion={shouldReduceMotion ?? false} />
 					</section>
 
 					<section aria-label="Step" className="min-w-0">

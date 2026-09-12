@@ -327,8 +327,6 @@ function buildBundle(): ContentBundle {
 
 const CONTENT: ContentBundle = buildBundle();
 export const META = CONTENT.meta;
-export const LAYERS = CONTENT.layers;
-export const STEPS = CONTENT.steps;
 export const SCENARIOS = CONTENT.scenarios;
 export function stepsForScenario(scenario: string): VisualizationStep[] {
 	return CONTENT.steps.filter((s) => s.scenario === scenario);

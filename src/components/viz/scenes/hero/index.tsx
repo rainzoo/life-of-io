@@ -1,17 +1,13 @@
 import type { ComponentType } from "react";
-import { BioMergeScene } from "./BioMergeScene";
-import { Ext4AllocScene } from "./Ext4AllocScene";
-import { FolioScene } from "./FolioScene";
-import { FtlNandScene } from "./FtlNandScene";
-import { JournalScene } from "./JournalScene";
-import { NvmeQueueScene } from "./NvmeQueueScene";
-import { ReadPathScene } from "./ReadPathScene";
-import { TrapPathScene } from "./TrapPathScene";
-
-export interface SceneProps {
-	slug: string;
-	reduceMotion: boolean;
-}
+import { HeroBioMerge } from "./HeroBioMerge";
+import { HeroExt4Alloc } from "./HeroExt4Alloc";
+import { HeroFolio } from "./HeroFolio";
+import { HeroFtlNand } from "./HeroFtlNand";
+import { HeroJournal } from "./HeroJournal";
+import { HeroNvme } from "./HeroNvme";
+import { HeroReadPath } from "./HeroReadPath";
+import { HeroTrapPath } from "./HeroTrapPath";
+import type { HeroSceneProps } from "./hero";
 
 export type SceneId =
 	| "trap-path"
@@ -24,16 +20,16 @@ export type SceneId =
 	| "read-path"
 	| "transit";
 
-const SCENE_COMPONENT: Record<SceneId, ComponentType<SceneProps>> = {
-	"trap-path": TrapPathScene,
-	"ext4-alloc": Ext4AllocScene,
-	journal: JournalScene,
-	folio: FolioScene,
-	"bio-merge": BioMergeScene,
-	"nvme-queue": NvmeQueueScene,
-	"ftl-nand": FtlNandScene,
-	"read-path": ReadPathScene,
-	transit: JournalScene,
+const HERO_COMPONENT: Record<SceneId, ComponentType<HeroSceneProps>> = {
+	"trap-path": HeroTrapPath,
+	"ext4-alloc": HeroExt4Alloc,
+	journal: HeroJournal,
+	folio: HeroFolio,
+	"bio-merge": HeroBioMerge,
+	"nvme-queue": HeroNvme,
+	"ftl-nand": HeroFtlNand,
+	"read-path": HeroReadPath,
+	transit: HeroJournal,
 };
 
 export function sceneForSlug(slug: string): SceneId {
@@ -61,8 +57,21 @@ export function sceneForSlug(slug: string): SceneId {
 	return "folio";
 }
 
-export function SceneForSlug(props: SceneProps) {
-	const id = sceneForSlug(props.slug);
-	const C = SCENE_COMPONENT[id];
+export function HeroSceneForSlug(props: HeroSceneProps) {
+	const C = HERO_COMPONENT[sceneForSlug(props.slug)];
 	return <C {...props} />;
 }
+
+// Autoplay dwell per scene at 1x. Hero enter animations complete by ~1.5s;
+// the remainder is hold time to read the staged caption before advancing.
+export const SCENE_DWELL_MS: Record<SceneId, number> = {
+	"trap-path": 3000,
+	"ext4-alloc": 3000,
+	journal: 3800,
+	folio: 3200,
+	"bio-merge": 3600,
+	"nvme-queue": 3600,
+	"ftl-nand": 3800,
+	"read-path": 3200,
+	transit: 3600,
+};

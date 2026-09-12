@@ -31,13 +31,13 @@ repos: # 1. General Hygiene & Security
     hooks:
       - id: check-github-workflows
 
-  # Knip
+  # Knip (uses the project's own node_modules via npx — no isolated env needed)
   - repo: local
     hooks:
       - id: knip
         name: knip
-        entry: npx knip
-        language: node
+        entry: npx --no-install knip
+        language: system
         pass_filenames: false
         always_run: true
         description: "Find unused files, dependencies, and exports in JS/TS projects."

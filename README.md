@@ -127,7 +127,8 @@ src/
 │   └── viz/                   # Custom visualization components
 │       ├── PhaseBadge.tsx     # Phase indicator badges
 │       ├── PhaseRail.tsx      # Phase navigation rail (per-scenario phases)
-│       ├── PipelineStack.tsx  # Request-travels-through cross-section + durability
+│       ├── PipelineCanvas.tsx # Hero I/O cross-section + durability (all scenarios)
+│       ├── scenes/hero/       # Shared SVG concept scenes (slug-mapped, 8 scenes)
 │       ├── LatencyWaterfall.tsx # Log-scale per-step latency strip
 │       ├── StepInspector.tsx  # Current step details (Kernel/Device tabs)
 │       └── TraceScrubber.tsx  # Step scrubber with event markers
