@@ -99,8 +99,19 @@ export const PipelineCanvas = memo(function PipelineCanvas({
 	const laneActive = PIPELINE_LANES.map((lane) => lane.layerIds.some((id) => activeLayers.has(id)));
 	const activeIndex = laneActive.findIndex(Boolean);
 	const boxRef = useRef<HTMLDivElement>(null);
+	// Never steal scroll on first render (deep links land at scroll 0 with
+	// the nav visible); only follow subsequent step changes. Comparing
+	// against the previous slug (rather than a mount flag) keeps this
+	// correct under StrictMode's double-invoked effects.
+	const prevSlugRef = useRef<string | null>(null);
 
 	useEffect(() => {
+		if (prevSlugRef.current === null) {
+			prevSlugRef.current = slug;
+			return;
+		}
+		if (prevSlugRef.current === slug) return;
+		prevSlugRef.current = slug;
 		boxRef.current?.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "nearest" });
 	}, [slug, reduceMotion]);
 

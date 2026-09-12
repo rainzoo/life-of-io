@@ -17,7 +17,17 @@ interface OutroBannerProps {
 export const OutroBanner = memo(function OutroBanner({ outro, reduceMotion, onReplay }: OutroBannerProps) {
 	const headingRef = useRef<HTMLHeadingElement>(null);
 	const boxRef = useRef<HTMLDivElement>(null);
+	// Same rule as the canvas: no scroll-steal on first render (e.g. a
+	// deep link straight to the final step); follow later arrivals only.
+	// Previous-value comparison keeps this correct under StrictMode.
+	const prevScenarioRef = useRef<string | null>(null);
 	useEffect(() => {
+		if (prevScenarioRef.current === null) {
+			prevScenarioRef.current = outro.scenario;
+			return;
+		}
+		if (prevScenarioRef.current === outro.scenario) return;
+		prevScenarioRef.current = outro.scenario;
 		headingRef.current?.focus({ preventScroll: true });
 		boxRef.current?.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "nearest" });
 	}, [outro.scenario, reduceMotion]);

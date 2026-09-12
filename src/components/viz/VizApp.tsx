@@ -1,5 +1,6 @@
 import { useReducedMotion } from "motion/react";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { SiteFooter } from "@/components/SiteFooter";
 import { SiteNav } from "@/components/SiteNav";
 import { ControlBar } from "@/components/viz/ControlBar";
 import { LatencyWaterfall } from "@/components/viz/LatencyWaterfall";
@@ -72,8 +73,28 @@ export function VizApp() {
 		setIsPlaying(false);
 	}, []);
 
+	// APG-style roving within the scenario tablist: arrows move across
+	// scenarios (and stop there, so they don't also step the timeline).
+	const handleTablistKey = useCallback((event: React.KeyboardEvent) => {
+		if (event.key !== "ArrowRight" && event.key !== "ArrowLeft") return;
+		event.preventDefault();
+		event.stopPropagation();
+		const ids = SCENARIOS.map((s) => s.id);
+		const i = ids.indexOf(scenarioId);
+		const next = ids[event.key === "ArrowRight" ? (i + 1) % ids.length : (i - 1 + ids.length) % ids.length];
+		handleScenario(next);
+		document.querySelector<HTMLButtonElement>(`[data-scenario-tab="${next}"]`)?.focus();
+	}, [handleScenario, scenarioId]);
+
 	useEffect(() => {
 		const onKey = (event: KeyboardEvent) => {
+			const target = event.target as HTMLElement | null;
+			// Don't fight focused controls: sliders/inputs own arrows+space,
+			// buttons and links activate on Enter natively.
+			if (event.key === "Enter" && target?.closest("button, a")) return;
+			if (target?.closest("input, textarea, select, [role='slider'], [contenteditable='true']")) {
+				if (event.key !== "Enter" && event.key !== "r" && event.key !== "R") return;
+			}
 			if (event.key === "ArrowLeft" || event.key === "ArrowUp") { event.preventDefault(); if (!isPlaying) handlePrev(); }
 			else if (event.key === "ArrowRight" || event.key === "ArrowDown" || event.key === " ") { event.preventDefault(); if (!isPlaying) handleNext(); }
 			else if (event.key === "Enter") { event.preventDefault(); handlePlayPause(); }
@@ -128,12 +149,13 @@ export function VizApp() {
 					<PhaseRail steps={steps} currentIndex={currentStepIndex} onSelect={handleScrub} />
 
 					<section aria-label="Pipeline" className="flex min-h-0 min-w-0 flex-col gap-3">
-						<div role="tablist" aria-label="Scenario" className="flex flex-wrap gap-1.5">
-							{SCENARIOS.map((s) => (
-								<button
-									key={s.id}
-									type="button"
-									role="tab"
+					<div role="tablist" aria-label="Scenario" onKeyDown={handleTablistKey} className="flex flex-wrap gap-1.5">
+						{SCENARIOS.map((s) => (
+							<button
+								key={s.id}
+								type="button"
+								role="tab"
+								data-scenario-tab={s.id}
 									aria-selected={s.id === scenarioId}
 									title={`${s.command} — ${s.blurb}`}
 									onClick={() => handleScenario(s.id)}
@@ -178,6 +200,7 @@ export function VizApp() {
 				</main>
 
 				<ControlBar steps={steps} index={currentStepIndex} maxIndex={maxIndex} isPlaying={isPlaying} speed={speed} onRestart={handleRestart} onPrev={handlePrev} onPlayPause={handlePlayPause} onNext={handleNext} onSpeed={handleSpeedChange} onScrub={handleScrub} />
+			<SiteFooter maxWidthClass="max-w-[1720px]" />
 			</div>
 	);
 }

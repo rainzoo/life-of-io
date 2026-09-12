@@ -18,30 +18,28 @@ export function ScenarioCard({ scenario }: ScenarioCardProps) {
 		navigate(href);
 	};
 
+	/** Compact tile: five share one row on desktop, so keep to label + command + two-line blurb. */
 	return (
 		<a
 			href={href}
 			onClick={open}
-			className="group flex min-w-0 flex-col gap-2 rounded-xl border border-slate-700/60 bg-slate-900/60 p-4 transition-colors hover:border-slate-500 hover:bg-slate-800/60"
+			className="group flex min-w-0 flex-col gap-1 rounded-xl border border-slate-700/60 bg-slate-900/60 p-3 transition-colors hover:border-slate-500 hover:bg-slate-800/60"
 		>
 			<div className="flex items-center justify-between gap-2">
-				<h3 className="text-[0.9375rem] font-semibold text-slate-100">{scenario.label}</h3>
-				<span className="flex shrink-0 items-center gap-1.5">
+				<h3 className="truncate text-[0.8125rem] font-semibold text-slate-100" title={scenario.label}>{scenario.label}</h3>
+				<span className="flex shrink-0 items-center gap-1">
 					{scenario.persistent && (
-						<span className="rounded-full border border-emerald-400/50 bg-emerald-500/10 px-2 py-0.5 text-[0.6875rem] font-medium text-emerald-300">
+						<span className="rounded-full border border-emerald-400/50 bg-emerald-500/10 px-1.5 py-px text-[0.625rem] font-medium text-emerald-300">
 							durable
 						</span>
 					)}
-					<span className="f-mono rounded-full border border-slate-700 bg-slate-800/80 px-2 py-0.5 text-[0.6875rem] text-slate-400">
-						{stepCount} steps
+					<span className="f-mono rounded-full border border-slate-700 bg-slate-800/80 px-1.5 py-px text-[0.625rem] text-slate-400">
+						{stepCount}
 					</span>
 				</span>
 			</div>
-			<p className="f-mono truncate text-cyan-200/90" title={scenario.command}>{scenario.command}</p>
-			<p className="f-body text-slate-400">{scenario.blurb}</p>
-			<span className="f-mono mt-auto pt-1 text-[0.75rem] text-slate-500 transition-colors group-hover:text-slate-300">
-				Explore →
-			</span>
+			<p className="f-mono truncate text-[0.75rem] text-cyan-200/90" title={scenario.command}>{scenario.command}</p>
+			<p className="f-body line-clamp-2 text-slate-400" title={scenario.blurb}>{scenario.blurb}</p>
 		</a>
 	);
 }

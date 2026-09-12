@@ -20,7 +20,7 @@ Visualize the life of a single I/O operation in Linux: from file command to data
 
 - Built with React 19, TypeScript, and Vite for fast development and production builds
 - Styled with Tailwind CSS and shadcn/ui component library
-- Smooth animations powered by Framer Motion (gated by `prefers-reduced-motion`)
+- Smooth animations powered by Motion (gated by `prefers-reduced-motion`)
 - Static deployment ready with SPA routing support
 
 ## 📊 Data Structure

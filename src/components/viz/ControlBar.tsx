@@ -93,7 +93,7 @@ export const ControlBar = memo(function ControlBar({
 			<div className="min-w-0 flex-1">
 				<TraceScrubber steps={steps} index={index} onChange={onScrub} />
 			</div>
-			<span className="shrink-0 hidden whitespace-nowrap text-[0.7rem] text-slate-400 lg:inline" title="←/→ navigate · Space next · Enter play/pause · R restart">Built with ❤️ by Manas · ←/→ navigate · Space next · Enter play · R restart</span>
+			<span className="shrink-0 hidden whitespace-nowrap text-[0.7rem] text-slate-400 lg:inline" title="←/→ navigate · Space next · Enter play/pause · R restart">←/→ navigate · Space next · Enter play · R restart</span>
 		</footer>
 	);
 });
